@@ -296,13 +296,13 @@ body{
 <!-- BARRA ACCESIBILIDAD (siempre visible) -->
 <div id="a11y" role="toolbar" aria-label="Herramientas de accesibilidad">
   <span class="ab-label">A11Y</span>
-  <button class="ab" id="ab-contrast" onclick="toggleContrast()" aria-label="Alto contraste" title="Alto contraste">🌓</button>
-  <button class="ab" id="ab-subs"     onclick="toggleSubs()"     aria-label="Subtítulos"    title="Subtítulos">💬</button>
-  <button class="ab" id="ab-voice"    onclick="toggleVoice()"    aria-label="Voz"           title="Comandos de voz">🎙️</button>
+  <button class="ab" id="ab-contrast" onclick="toggleContrast()" aria-label="Alto contraste" title="Alto contraste">Contraste</button>
+  <button class="ab" id="ab-subs"     onclick="toggleSubs()"     aria-label="Subtítulos"    title="Subtítulos">SUB</button>
+  <button class="ab" id="ab-voice"    onclick="toggleVoice()"    aria-label="Voz"           title="Comandos de voz">VOZ</button>
   <button class="ab"                  onclick="setSize('t-lg')"   aria-label="Texto grande"  title="Texto grande" id="ab-lg">A+</button>
   <button class="ab"                  onclick="setSize('t-xl')"   aria-label="Texto XL"      title="Texto muy grande" id="ab-xl">A++</button>
   <button class="ab"                  onclick="setSize('')"       aria-label="Texto normal"  title="Texto normal">A</button>
-  <button class="ab"                  onclick="stopSpeech()"      aria-label="Detener voz"   title="Detener">⏹</button>
+  <button class="ab"                  onclick="stopSpeech()"      aria-label="Detener voz"   title="Detener">STOP</button>
 </div>
 
 <!-- TOAST -->
@@ -314,12 +314,12 @@ body{
 <!-- ═══════════ PANTALLA INICIO ═══════════ -->
 <div id="home" role="main">
   <div class="home-header" style="margin-top:52px">
-    <h1>📐 Matemáticas<br>en RA</h1>
+    <h1>Matemáticas<br>en RA</h1>
     <p>Realidad Aumentada · WebXR · Accesible</p>
   </div>
 
   <div id="no-xr" role="alert">
-    ⚠️ Tu navegador no soporta WebXR AR. Se usará <strong>modo 3D interactivo</strong>. Para AR real usa <strong>Chrome en Android</strong> o <strong>Safari en iOS 16+</strong>.
+    Tu navegador no soporta WebXR AR. Se usará <strong>modo 3D interactivo</strong>. Para AR real usa <strong>Chrome en Android</strong> o <strong>Safari en iOS 16+</strong>.
   </div>
 
   <div class="swipe-hint" aria-label="Desliza para ver las figuras">← Desliza para explorar →</div>
@@ -334,7 +334,7 @@ body{
 <!-- Botón AR -->
 <button class="btn-ar" id="btn-start-ar" onclick="startAR()"
   aria-label="Iniciar Realidad Aumentada">
-  📷 Iniciar AR
+  Iniciar RA
 </button>
 
 <!-- ═══════════ OVERLAY AR ═══════════ -->
@@ -345,7 +345,7 @@ body{
 
   <!-- Pista de retícula -->
   <div id="reticle-hint" aria-live="polite">
-    📱 Apunta a una superficie plana<br>y toca para colocar la figura
+    Apunta a una superficie plana<br>y toca para colocar la figura
   </div>
 
   <!-- Subtítulos -->
@@ -361,10 +361,10 @@ body{
 
   <!-- Controles inferiores AR -->
   <div id="ar-controls">
-    <button class="ar-btn" onclick="prevFig()" aria-label="Figura anterior">◀ Ant.</button>
-    <button class="ar-btn primary" onclick="speakCurrent()" aria-label="Leer descripción">🔊 Leer</button>
-    <button class="ar-btn" onclick="nextFig()" aria-label="Siguiente figura">Sig. ▶</button>
-    <button class="ar-btn" onclick="toggleInfo()" aria-label="Ver información matemática">ℹ️</button>
+    <button class="ar-btn" onclick="prevFig()" aria-label="Figura anterior">Ant.</button>
+    <button class="ar-btn primary" onclick="speakCurrent()" aria-label="Leer descripción">Leer</button>
+    <button class="ar-btn" onclick="nextFig()" aria-label="Siguiente figura">Sig.</button>
+    <button class="ar-btn" onclick="toggleInfo()" aria-label="Ver información matemática">info</button>
     <button class="ar-btn" onclick="exitAR()" style="flex:0.7;border-color:var(--accent2);color:var(--accent2)" aria-label="Salir de AR">✕</button>
   </div>
 </div>
@@ -469,7 +469,7 @@ function hideSub(){setTimeout(()=>document.getElementById('subs').classList.remo
 function toggleSubs(){
   subsOn=!subsOn;
   document.getElementById('ab-subs').classList.toggle('on',subsOn);
-  toast(subsOn?'💬 Subtítulos ON':'💬 Subtítulos OFF');
+  toast(subsOn?'Subtítulos ON':'Subtítulos OFF');
   speak(subsOn?'Subtítulos activados':'Subtítulos desactivados');
 }
 function speakCurrent(){ speak(`${FIGS[curIdx].nombre}. ${FIGS[curIdx].narracion}`); }
@@ -491,7 +491,7 @@ function toggleContrast(){
   document.body.classList.toggle('hc');
   const on=document.body.classList.contains('hc');
   document.getElementById('ab-contrast').classList.toggle('on',on);
-  toast(on?'🌓 Alto contraste ON':'🌓 Contraste normal');
+  toast(on?'Alto contraste ON':'Contraste normal');
   speak(on?'Alto contraste activado':'Contraste normal activado');
 }
 function setSize(cls){
@@ -519,7 +519,7 @@ function toggleVoice(){
   if(!voiceOn){
     if(recognition) recognition.stop();
     document.getElementById('voice-ind').classList.remove('show');
-    toast('🎙️ Voz OFF'); return;
+    toast('Voz OFF'); return;
   }
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   recognition=new SR();
@@ -537,7 +537,7 @@ function toggleVoice(){
   recognition.onend=()=>{if(voiceOn) recognition.start();};
   recognition.start();
   speak('Comandos de voz activados. Di siguiente, anterior, leer, o el nombre de una figura.');
-  toast('🎙️ Voz ON');
+  toast('Voz ON');
 }
 function processCmd(cmd){
   if(cmd.includes('siguiente')) { nextFig(); return; }
@@ -704,7 +704,7 @@ async function startAR(){
 
   } catch(e){
     console.warn('WebXR error:',e);
-    toast('⚠️ Cambiando a modo 3D');
+    toast('Cambiando a modo 3D');
     startDemoMode();
   }
 }
@@ -761,7 +761,7 @@ function startDemoMode(){
   document.getElementById('home').style.display='none';
   document.getElementById('btn-start-ar').style.display='none';
   document.getElementById('ar-overlay').classList.add('active');
-  document.getElementById('reticle-hint').textContent='👆 Toca una figura en el panel o usa los botones';
+  document.getElementById('reticle-hint').textContent='Toca una figura en el panel o usa los botones';
 
   // Posición cámara para demo
   camera.position.set(0,0.3,0.7);
@@ -807,7 +807,7 @@ function buildCarousel(){
       <div class="fig-label">${f.nombre}</div>
       <div class="fig-formula">${f.formula}</div>
       <p class="fig-desc">${f.desc}</p>
-      <button class="btn-narrar" aria-label="Leer descripción de ${f.nombre}">🔊 Leer</button>
+      <button class="btn-narrar" aria-label="Leer descripción de ${f.nombre}">Leer</button>
     `;
     div.querySelector('.btn-narrar').addEventListener('click',(e)=>{
       e.stopPropagation(); selectFig(i); speak(`${f.nombre}. ${f.narracion}`);
@@ -833,7 +833,7 @@ async function init(){
   }
   if(!webXRSupported){
     document.getElementById('no-xr').style.display='block';
-    document.getElementById('btn-start-ar').textContent='📱 Iniciar modo 3D';
+    document.getElementById('btn-start-ar').textContent='Iniciar modo 3D';
   }
 
   // Activar subtítulos por defecto
