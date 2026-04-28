@@ -230,8 +230,8 @@ body{
 <canvas id="c" aria-hidden="true"></canvas>
 
 <div id="a11y" role="toolbar" aria-label="Herramientas de accesibilidad">
-  <span class="ab-label">A11Y</span>
-  <button class="ab" id="ab-contrast" onclick="toggleContrast()" aria-label="Alternar alto contraste">HC</button>
+  <span class="ab-label"></span>
+  <button class="ab" id="ab-contrast" onclick="toggleContrast()" aria-label="Alternar alto contraste">Contraste</button>
   <button class="ab" id="ab-subs"     onclick="toggleSubs()"     aria-label="Alternar subtitulos">SUB</button>
   <button class="ab" id="ab-voice"    onclick="toggleVoice()"    aria-label="Activar comandos de voz">VOZ</button>
   <button class="ab" id="ab-lg"       onclick="setSize('t-lg')"  aria-label="Texto grande">A+</button>
@@ -285,45 +285,64 @@ body{
 </div>
 
 <script>
-const FIGS=[
+const FIGS = [
   {
-    id:'cubo',nombre:'Cubo',abrev:'CUB',color:0x00e5ff,colorStr:'#00e5ff',
-    formula:'V = a3  |  A = 6a2',
-    desc:'Poliedro regular con 6 caras cuadradas, 8 vertices y 12 aristas.',
-    narracion:'El cubo es un poliedro regular con seis caras cuadradas iguales. Su volumen se calcula elevando el lado al cubo. Tiene 8 vertices y 12 aristas.',
-    make:s=>{
-      const g=new THREE.BoxGeometry(s,s,s),m=new THREE.MeshPhongMaterial({color:0x00e5ff,transparent:true,opacity:0.88});
-      const e=new THREE.EdgesGeometry(g),l=new THREE.LineSegments(e,new THREE.LineBasicMaterial({color:0xffffff,opacity:0.35,transparent:true}));
-      const mesh=new THREE.Mesh(g,m); mesh.add(l); return mesh;
+    id:'cubo', nombre:'Cubo', emoji:'⬛', color:0x00e5ff, colorStr:'#00e5ff',
+    formula:'V = a³  |  A = 6a²',
+    desc:'El cubo tiene 6 caras cuadradas iguales, 8 vértices y 12 aristas.',
+    narracion:'El cubo es un poliedro regular con 6 caras cuadradas. Su volumen se calcula elevando el lado al cubo. Tiene 8 vértices y 12 aristas iguales.',
+    make: (s)=>{
+      const g=new THREE.BoxGeometry(s,s,s);
+      const m=new THREE.MeshPhongMaterial({color:0x00e5ff,transparent:true,opacity:0.88,wireframe:false});
+      const edges=new THREE.EdgesGeometry(g);
+      const lines=new THREE.LineSegments(edges,new THREE.LineBasicMaterial({color:0xffffff,opacity:0.4,transparent:true}));
+      const mesh=new THREE.Mesh(g,m);
+      mesh.add(lines); return mesh;
     }
   },
   {
-    id:'esfera',nombre:'Esfera',abrev:'ESF',color:0xff4081,colorStr:'#ff4081',
-    formula:'V = 4/3 pi r3  |  A = 4 pi r2',
-    desc:'Superficie donde todos los puntos equidistan del centro. Sin aristas.',
-    narracion:'La esfera es perfectamente redonda. Todos sus puntos estan a la misma distancia del centro, llamada radio. Su volumen es cuatro tercios de pi por el radio al cubo.',
-    make:s=>new THREE.Mesh(new THREE.SphereGeometry(s*0.55,32,32),new THREE.MeshPhongMaterial({color:0xff4081,transparent:true,opacity:0.88}))
+    id:'esfera', nombre:'Esfera', emoji:'🔴', color:0xff4081, colorStr:'#ff4081',
+    formula:'V = 4/3 π r³  |  A = 4πr²',
+    desc:'Todos sus puntos equidistan del centro. Sin aristas ni vértices.',
+    narracion:'La esfera es perfectamente redonda. Todos sus puntos están a la misma distancia del centro. Su volumen es 4 tercios de pi por el radio al cubo.',
+    make:(s)=>{
+      const g=new THREE.SphereGeometry(s*0.55,32,32);
+      const m=new THREE.MeshPhongMaterial({color:0xff4081,transparent:true,opacity:0.88});
+      return new THREE.Mesh(g,m);
+    }
   },
   {
-    id:'cono',nombre:'Cono',abrev:'CON',color:0xffd740,colorStr:'#ffd740',
-    formula:'V = 1/3 pi r2 h',
-    desc:'Base circular con superficie lateral que converge en un vertice.',
-    narracion:'El cono tiene una base circular y termina en un punto llamado vertice o apice. Su volumen es un tercio de pi por el radio al cuadrado por la altura.',
-    make:s=>new THREE.Mesh(new THREE.ConeGeometry(s*0.5,s*1.1,32),new THREE.MeshPhongMaterial({color:0xffd740,transparent:true,opacity:0.88}))
+    id:'cono', nombre:'Cono', emoji:'🔺', color:0xffd740, colorStr:'#ffd740',
+    formula:'V = 1/3 π r² h',
+    desc:'Base circular con superficie lateral que converge en un vértice.',
+    narracion:'El cono tiene una base circular y termina en un punto llamado vértice. Su volumen es un tercio de pi por radio al cuadrado por la altura.',
+    make:(s)=>{
+      const g=new THREE.ConeGeometry(s*0.5,s*1.1,32);
+      const m=new THREE.MeshPhongMaterial({color:0xffd740,transparent:true,opacity:0.88});
+      return new THREE.Mesh(g,m);
+    }
   },
   {
-    id:'cilindro',nombre:'Cilindro',abrev:'CIL',color:0x69f0ae,colorStr:'#69f0ae',
-    formula:'V = pi r2 h',
+    id:'cilindro', nombre:'Cilindro', emoji:'🟢', color:0x69f0ae, colorStr:'#69f0ae',
+    formula:'V = π r² h',
     desc:'Dos bases circulares paralelas unidas por superficie lateral curva.',
-    narracion:'El cilindro tiene dos bases circulares iguales y paralelas unidas por una superficie lateral. Su volumen es pi por el radio al cuadrado por la altura.',
-    make:s=>new THREE.Mesh(new THREE.CylinderGeometry(s*0.45,s*0.45,s*1.1,32),new THREE.MeshPhongMaterial({color:0x69f0ae,transparent:true,opacity:0.88}))
+    narracion:'El cilindro tiene dos bases circulares y una superficie lateral. Su volumen es pi por el radio al cuadrado por la altura.',
+    make:(s)=>{
+      const g=new THREE.CylinderGeometry(s*0.45,s*0.45,s*1.1,32);
+      const m=new THREE.MeshPhongMaterial({color:0x69f0ae,transparent:true,opacity:0.88});
+      return new THREE.Mesh(g,m);
+    }
   },
   {
-    id:'piramide',nombre:'Piramide',abrev:'PIR',color:0xce93d8,colorStr:'#ce93d8',
-    formula:'V = 1/3 x A x h',
-    desc:'Base cuadrada con caras triangulares que convergen en el apice.',
-    narracion:'La piramide tiene una base cuadrada y caras triangulares que convergen en un punto llamado apice. Su volumen es un tercio del area de la base multiplicado por la altura.',
-    make:s=>new THREE.Mesh(new THREE.ConeGeometry(s*0.55,s*1.1,4),new THREE.MeshPhongMaterial({color:0xce93d8,transparent:true,opacity:0.88}))
+    id:'piramide', nombre:'Pirámide', emoji:'🔷', color:0xce93d8, colorStr:'#ce93d8',
+    formula:'V = 1/3 · A_base · h',
+    desc:'Base cuadrada con caras triangulares que convergen en el ápice.',
+    narracion:'La pirámide tiene una base cuadrada y caras triangulares que se unen en un punto llamado ápice. Su volumen es un tercio del área de la base por la altura.',
+    make:(s)=>{
+      const g=new THREE.ConeGeometry(s*0.55,s*1.1,4);
+      const m=new THREE.MeshPhongMaterial({color:0xce93d8,transparent:true,opacity:0.88});
+      return new THREE.Mesh(g,m);
+    }
   }
 ];
 
