@@ -1,545 +1,1147 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<meta name="theme-color" content="#050510"/>
-<title>Matematicas en RA - Figuras Geometricas</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<style>
-:root{
-  --bg:#050510;--surface:rgba(10,10,30,0.92);--surface2:rgba(20,20,50,0.95);
-  --accent:#00e5ff;--accent2:#ff4081;
-  --text:#e8eaf6;--dim:#9fa8da;--border:rgba(0,229,255,0.22);
-  --fs:1rem;--icon:1.4rem;--r:16px;
-}
-body.hc{
-  --bg:#000;--surface:rgba(0,0,0,0.97);--surface2:#111;
-  --accent:#ffff00;--accent2:#ff6600;
-  --text:#fff;--dim:#ddd;--border:rgba(255,255,0,0.55);
-}
-body.t-lg{--fs:1.18rem;--icon:1.6rem;}
-body.t-xl{--fs:1.38rem;--icon:1.9rem;}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matemáticas en RA — Figuras Geométricas</title>
 
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  <!-- A-Frame + AR.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
-body{
-  font-family:-apple-system,'Segoe UI',sans-serif;
-  background:var(--bg);color:var(--text);
-  font-size:var(--fs);overflow:hidden;
-  height:100dvh;width:100vw;user-select:none;
-}
-
-#c{position:fixed;inset:0;width:100%;height:100%;z-index:0;touch-action:none;}
-
-#home{
-  position:fixed;inset:0;z-index:50;
-  background:linear-gradient(170deg,#050510 0%,#0a0520 100%);
-  display:flex;flex-direction:column;align-items:center;overflow-y:auto;
-  padding:env(safe-area-inset-top,20px) 20px 100px;
-}
-.home-header{width:100%;padding:24px 0 20px;text-align:center;}
-.home-header h1{
-  font-size:calc(var(--fs)*1.45);font-weight:800;
-  color:var(--accent);letter-spacing:-0.02em;line-height:1.15;
-}
-.home-header p{font-size:calc(var(--fs)*0.85);color:var(--dim);margin-top:6px;}
-
-.carousel{
-  width:100%;display:flex;gap:12px;overflow-x:auto;
-  padding:8px 0 16px;scrollbar-width:none;scroll-snap-type:x mandatory;
-}
-.carousel::-webkit-scrollbar{display:none}
-.fig-card{
-  min-width:160px;background:var(--surface2);
-  border:1.5px solid var(--border);border-radius:var(--r);
-  padding:18px 14px;cursor:pointer;scroll-snap-align:start;
-  transition:border-color .18s,transform .15s;
-  display:flex;flex-direction:column;gap:8px;
-}
-.fig-card:active{transform:scale(0.97);}
-.fig-card.sel{border-color:var(--accent);background:rgba(0,229,255,0.07);}
-.fig-icon{
-  width:50px;height:50px;border-radius:12px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:0.72rem;font-weight:800;letter-spacing:0.04em;color:#000;
-}
-.fig-label{font-size:calc(var(--fs)*1.0);font-weight:700;color:var(--text);}
-.fig-formula{
-  font-size:calc(var(--fs)*0.72);color:var(--accent);
-  font-family:'Courier New',monospace;
-  background:rgba(0,229,255,0.08);padding:2px 6px;border-radius:5px;
-  display:inline-block;
-}
-.fig-desc{font-size:calc(var(--fs)*0.78);color:var(--dim);line-height:1.5;}
-.btn-narrar{
-  width:100%;background:none;border:1px solid var(--border);
-  border-radius:10px;color:var(--accent);padding:9px 0;
-  font-size:calc(var(--fs)*0.82);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:5px;
-  min-height:44px;transition:background .15s,color .15s;font-weight:600;
-}
-.btn-narrar:active{background:var(--accent);color:#000;}
-
-.btn-ar{
-  width:calc(100% - 40px);max-width:360px;
-  position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);
-  left:50%;transform:translateX(-50%);
-  background:var(--accent);color:#000;
-  border:none;border-radius:50px;
-  font-size:calc(var(--fs)*1.05);font-weight:800;
-  padding:18px 0;letter-spacing:0.03em;
-  cursor:pointer;z-index:60;
-  box-shadow:0 0 30px rgba(0,229,255,0.35);
-  min-height:60px;transition:opacity .2s,transform .1s;
-}
-.btn-ar:active{transform:translateX(-50%) scale(0.97);}
-
-#a11y{
-  position:fixed;top:env(safe-area-inset-top,0);left:0;right:0;
-  z-index:200;background:var(--surface);
-  border-bottom:1px solid var(--border);
-  padding:6px 12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;
-}
-.ab{
-  background:none;color:var(--dim);border:1px solid var(--border);
-  border-radius:8px;padding:7px 11px;
-  font-size:calc(var(--icon)*0.68);font-weight:700;
-  cursor:pointer;min-width:44px;min-height:44px;
-  display:flex;align-items:center;justify-content:center;gap:4px;
-  transition:all .15s;letter-spacing:0.02em;
-}
-.ab.on,.ab:active{background:var(--accent);color:#000;border-color:var(--accent);}
-.ab-label{font-size:calc(var(--fs)*0.65);color:var(--dim);font-weight:700;text-transform:uppercase;}
-
-#ar-overlay{position:fixed;inset:0;z-index:100;pointer-events:none;display:none;}
-#ar-overlay.active{display:block;}
-
-#subs{
-  position:absolute;bottom:160px;left:50%;transform:translateX(-50%);
-  background:rgba(0,0,0,0.88);color:#fff;
-  border:2px solid var(--accent);border-radius:12px;
-  padding:10px 18px;font-size:var(--fs);
-  max-width:88%;text-align:center;display:none;
-  pointer-events:none;line-height:1.45;font-weight:500;
-  backdrop-filter:blur(4px);
-}
-#subs.show{display:block;}
-
-#reticle-hint{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  color:rgba(255,255,255,0.7);font-size:calc(var(--fs)*0.9);
-  text-align:center;pointer-events:none;text-shadow:0 0 8px #000;line-height:1.6;
-}
-
-#fig-info{
-  position:absolute;bottom:160px;left:50%;transform:translateX(-50%);
-  background:var(--surface);border:1.5px solid var(--accent);
-  border-radius:var(--r);padding:14px 18px;max-width:88%;
-  display:none;pointer-events:auto;backdrop-filter:blur(10px);
-}
-#fig-info.show{display:block;}
-#fig-info .fi-name{font-size:calc(var(--fs)*1.1);font-weight:800;color:var(--accent);}
-#fig-info .fi-formula{
-  font-size:calc(var(--fs)*0.8);color:var(--accent);
-  font-family:monospace;background:rgba(0,229,255,0.09);
-  padding:2px 7px;border-radius:5px;display:inline-block;margin:4px 0 6px;
-}
-#fig-info .fi-desc{font-size:calc(var(--fs)*0.82);color:var(--dim);line-height:1.5;}
-.fi-close{
-  position:absolute;top:10px;right:12px;
-  background:none;border:none;color:var(--dim);font-size:1.1rem;
-  cursor:pointer;min-width:36px;min-height:36px;
-  display:flex;align-items:center;justify-content:center;font-weight:700;
-}
-
-#ar-controls{
-  position:absolute;bottom:env(safe-area-inset-bottom,0);left:0;right:0;
-  padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 12px);
-  display:flex;gap:10px;align-items:center;pointer-events:auto;
-  background:linear-gradient(0deg,rgba(5,5,16,0.95) 0%,transparent 100%);
-}
-.ar-btn{
-  flex:1;background:var(--surface);color:var(--text);
-  border:1px solid var(--border);border-radius:50px;
-  padding:14px 8px;font-size:calc(var(--fs)*0.85);
-  cursor:pointer;min-height:52px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;gap:5px;
-  transition:all .15s;letter-spacing:0.02em;
-}
-.ar-btn:active{background:var(--accent);color:#000;}
-.ar-btn.primary{background:var(--accent);color:#000;border-color:var(--accent);flex:1.4;}
-
-#voice-ind{
-  position:absolute;top:70px;right:14px;
-  background:var(--surface2);border:1px solid var(--accent2);
-  border-radius:10px;padding:6px 12px;
-  font-size:calc(var(--fs)*0.78);color:var(--accent2);
-  display:none;pointer-events:none;backdrop-filter:blur(6px);
-}
-#voice-ind.show{display:block;}
-
-#fig-indicator{
-  position:absolute;top:70px;left:50%;transform:translateX(-50%);
-  background:rgba(0,0,0,0.7);border:1px solid var(--border);
-  border-radius:20px;padding:5px 14px;
-  font-size:calc(var(--fs)*0.8);color:var(--text);
-  pointer-events:none;white-space:nowrap;backdrop-filter:blur(4px);font-weight:600;
-}
-
-#loading{
-  position:fixed;inset:0;background:var(--bg);z-index:999;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
-}
-.spin{
-  width:44px;height:44px;border-radius:50%;
-  border:3px solid rgba(0,229,255,0.2);border-top-color:var(--accent);
-  animation:sp 0.8s linear infinite;
-}
-@keyframes sp{to{transform:rotate(360deg)}}
-#loading p{font-size:calc(var(--fs)*0.88);color:var(--dim);}
-
-#toast{
-  position:fixed;top:80px;left:50%;transform:translateX(-50%);
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:10px;padding:9px 18px;
-  font-size:calc(var(--fs)*0.82);color:var(--text);
-  z-index:500;display:none;white-space:nowrap;
-  backdrop-filter:blur(6px);pointer-events:none;
-}
-
-.swipe-hint{font-size:calc(var(--fs)*0.78);color:var(--dim);text-align:center;padding:4px 0 8px;}
-
-#no-xr{
-  display:none;background:rgba(255,64,129,0.12);
-  border:1px solid var(--accent2);border-radius:12px;
-  padding:12px 16px;margin:12px 0;
-  font-size:calc(var(--fs)*0.84);color:var(--text);line-height:1.5;
-}
-
-*:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
-</style>
-</head>
-<body>
-
-<div id="loading" role="status" aria-live="polite">
-  <div class="spin"></div>
-  <p>Cargando Matematicas en RA...</p>
-</div>
-
-<canvas id="c" aria-hidden="true"></canvas>
-
-<div id="a11y" role="toolbar" aria-label="Herramientas de accesibilidad">
-  
-  <button class="ab" id="ab-contrast" onclick="toggleContrast()" aria-label="Alternar alto contraste">Contraste</button>
-  <button class="ab" id="ab-subs"     onclick="toggleSubs()"     aria-label="Alternar subtitulos">SUB</button>
-  <button class="ab" id="ab-voice"    onclick="toggleVoice()"    aria-label="Activar comandos de voz">VOZ</button>
-  <button class="ab" id="ab-lg"       onclick="setSize('t-lg')"  aria-label="Texto grande">A+</button>
-  <button class="ab" id="ab-xl"       onclick="setSize('t-xl')"  aria-label="Texto muy grande">A++</button>
-  <button class="ab"                  onclick="setSize('')"       aria-label="Texto normal">A</button>
-  <button class="ab"                  onclick="stopSpeech()"      aria-label="Detener narracion">STOP</button>
-</div>
-
-<div id="toast"     role="status" aria-live="polite"></div>
-<div id="voice-ind" role="status" aria-live="polite" aria-atomic="true">Escuchando...</div>
-
-<div id="home" role="main">
-  <div class="home-header" style="margin-top:52px">
-    <h1>Matematicas en RA</h1>
-    <p>Realidad Aumentada — WebXR — ARCore / ARKit</p>
-  </div>
-  <div id="no-xr" role="alert">
-    Aviso: este dispositivo no soporta WebXR AR. Se activara el modo 3D interactivo.
-    Para AR real usa Chrome en Android o Safari en iOS 16+.
-  </div>
-  <div class="swipe-hint" aria-label="Desliza para explorar las figuras">Desliza para explorar las figuras</div>
-  <div class="carousel" role="list" aria-label="Figuras geometricas" id="carousel"></div>
-  <div style="height:80px"></div>
-</div>
-
-<button class="btn-ar" id="btn-start-ar" onclick="startAR()" aria-label="Iniciar Realidad Aumentada">
-  Iniciar RA
-</button>
-
-<div id="ar-overlay" role="region" aria-label="Vista de Realidad Aumentada">
-  <div id="fig-indicator" aria-live="polite">Cubo</div>
-  <div id="reticle-hint" aria-live="polite">
-    Apunta a una superficie plana<br>y toca para colocar la figura
-  </div>
-  <div id="subs" role="status" aria-live="polite" aria-atomic="true"></div>
-  <div id="fig-info" role="dialog" aria-modal="false" aria-label="Informacion matematica de la figura">
-    <button class="fi-close" onclick="closeFigInfo()" aria-label="Cerrar panel de informacion">X</button>
-    <div class="fi-name"    id="fi-name"></div>
-    <div class="fi-formula" id="fi-formula"></div>
-    <p   class="fi-desc"    id="fi-desc"></p>
-  </div>
-  <div id="ar-controls">
-    <button class="ar-btn"         onclick="prevFig()"      aria-label="Figura anterior">Anterior</button>
-    <button class="ar-btn primary" onclick="speakCurrent()" aria-label="Leer descripcion en voz alta">Leer</button>
-    <button class="ar-btn"         onclick="nextFig()"      aria-label="Siguiente figura">Siguiente</button>
-    <button class="ar-btn"         onclick="toggleInfo()"   aria-label="Ver propiedades matematicas">Info</button>
-    <button class="ar-btn" onclick="exitAR()"
-      style="flex:0.8;border-color:var(--accent2);color:var(--accent2)"
-      aria-label="Salir de AR">Salir</button>
-  </div>
-</div>
-
-<script>
-const FIGS=[
-  {
-    id:'cubo',nombre:'Cubo',abrev:'CUB',color:0x00e5ff,colorStr:'#00e5ff',
-    formula:'V = a3  |  A = 6a2',
-    desc:'Poliedro regular con 6 caras cuadradas, 8 vertices y 12 aristas.',
-    narracion:'El cubo es un poliedro regular con seis caras cuadradas iguales. Su volumen se calcula elevando el lado al cubo. Tiene 8 vertices y 12 aristas.',
-    make:s=>{
-      const g=new THREE.BoxGeometry(s,s,s),m=new THREE.MeshPhongMaterial({color:0x00e5ff,transparent:true,opacity:0.88});
-      const e=new THREE.EdgesGeometry(g),l=new THREE.LineSegments(e,new THREE.LineBasicMaterial({color:0xffffff,opacity:0.35,transparent:true}));
-      const mesh=new THREE.Mesh(g,m); mesh.add(l); return mesh;
+  <style>
+    /* ─── CSS Variables / Themes ─── */
+    :root {
+      --bg: #0a0a1a;
+      --surface: #12122a;
+      --surface2: #1a1a3a;
+      --accent: #00e5ff;
+      --accent2: #ff4081;
+      --text: #e8eaf6;
+      --text-dim: #9fa8da;
+      --border: rgba(0,229,255,0.25);
+      --shadow: 0 4px 32px rgba(0,229,255,0.12);
+      --radius: 14px;
+      --font-size: 1rem;
+      --icon-size: 1.4rem;
     }
-  },
-  {
-    id:'esfera',nombre:'Esfera',abrev:'ESF',color:0xff4081,colorStr:'#ff4081',
-    formula:'V = 4/3 pi r3  |  A = 4 pi r2',
-    desc:'Superficie donde todos los puntos equidistan del centro. Sin aristas.',
-    narracion:'La esfera es perfectamente redonda. Todos sus puntos estan a la misma distancia del centro, llamada radio. Su volumen es cuatro tercios de pi por el radio al cubo.',
-    make:s=>new THREE.Mesh(new THREE.SphereGeometry(s*0.55,32,32),new THREE.MeshPhongMaterial({color:0xff4081,transparent:true,opacity:0.88}))
-  },
-  {
-    id:'cono',nombre:'Cono',abrev:'CON',color:0xffd740,colorStr:'#ffd740',
-    formula:'V = 1/3 pi r2 h',
-    desc:'Base circular con superficie lateral que converge en un vertice.',
-    narracion:'El cono tiene una base circular y termina en un punto llamado vertice o apice. Su volumen es un tercio de pi por el radio al cuadrado por la altura.',
-    make:s=>new THREE.Mesh(new THREE.ConeGeometry(s*0.5,s*1.1,32),new THREE.MeshPhongMaterial({color:0xffd740,transparent:true,opacity:0.88}))
-  },
-  {
-    id:'cilindro',nombre:'Cilindro',abrev:'CIL',color:0x69f0ae,colorStr:'#69f0ae',
-    formula:'V = pi r2 h',
-    desc:'Dos bases circulares paralelas unidas por superficie lateral curva.',
-    narracion:'El cilindro tiene dos bases circulares iguales y paralelas unidas por una superficie lateral. Su volumen es pi por el radio al cuadrado por la altura.',
-    make:s=>new THREE.Mesh(new THREE.CylinderGeometry(s*0.45,s*0.45,s*1.1,32),new THREE.MeshPhongMaterial({color:0x69f0ae,transparent:true,opacity:0.88}))
-  },
-  {
-    id:'piramide',nombre:'Piramide',abrev:'PIR',color:0xce93d8,colorStr:'#ce93d8',
-    formula:'V = 1/3 x A x h',
-    desc:'Base cuadrada con caras triangulares que convergen en el apice.',
-    narracion:'La piramide tiene una base cuadrada y caras triangulares que convergen en un punto llamado apice. Su volumen es un tercio del area de la base multiplicado por la altura.',
-    make:s=>new THREE.Mesh(new THREE.ConeGeometry(s*0.55,s*1.1,4),new THREE.MeshPhongMaterial({color:0xce93d8,transparent:true,opacity:0.88}))
-  }
-];
 
-let curIdx=0,subsOn=true,voiceOn=false,xrSession=null,xrRefSpace=null,hitTestSource=null;
-let renderer,scene,camera,clock,currentMesh=null,reticleMesh=null,placed=false,infoOpen=false,recognition=null,webXRSupported=false;
+    body.high-contrast {
+      --bg: #000000;
+      --surface: #111111;
+      --surface2: #1a1a1a;
+      --accent: #ffff00;
+      --accent2: #ff6600;
+      --text: #ffffff;
+      --text-dim: #dddddd;
+      --border: rgba(255,255,0,0.6);
+    }
 
-/* TTS */
-function speak(t){
-  window.speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(t);
-  u.lang='es-ES';u.rate=0.92;u.pitch=1.05;
-  if(subsOn)showSub(t);
-  u.onend=hideSub; u.onerror=hideSub;
-  window.speechSynthesis.speak(u);
-}
-function stopSpeech(){window.speechSynthesis.cancel();hideSub();}
-function showSub(t){if(!subsOn)return;const el=document.getElementById('subs');el.textContent=t.length>110?t.slice(0,110)+'...':t;el.classList.add('show');}
-function hideSub(){setTimeout(()=>document.getElementById('subs').classList.remove('show'),700);}
-function toggleSubs(){subsOn=!subsOn;document.getElementById('ab-subs').classList.toggle('on',subsOn);speak(subsOn?'Subtitulos activados':'Subtitulos desactivados');}
-function speakCurrent(){speak(FIGS[curIdx].nombre+'. '+FIGS[curIdx].narracion);}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* Toast */
-let _tid;
-function toast(m){const el=document.getElementById('toast');el.textContent=m;el.style.display='block';clearTimeout(_tid);_tid=setTimeout(()=>el.style.display='none',2000);}
+    body {
+      font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: var(--font-size);
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
 
-/* Accesibilidad */
-function toggleContrast(){document.body.classList.toggle('hc');const on=document.body.classList.contains('hc');document.getElementById('ab-contrast').classList.toggle('on',on);speak(on?'Alto contraste activado':'Contraste normal activado');}
-function setSize(c){document.body.classList.remove('t-lg','t-xl');['ab-lg','ab-xl'].forEach(id=>document.getElementById(id).classList.remove('on'));if(c){document.body.classList.add(c);if(c==='t-lg')document.getElementById('ab-lg').classList.add('on');if(c==='t-xl')document.getElementById('ab-xl').classList.add('on');}speak({'t-lg':'Texto grande','t-xl':'Texto muy grande','':'Texto normal'}[c]);}
+    /* ─── HEADER ─── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 {
+      font-size: calc(var(--font-size) * 1.15);
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+      flex: 1;
+    }
+    header .subtitle {
+      font-size: calc(var(--font-size) * 0.75);
+      color: var(--text-dim);
+      display: block;
+    }
 
-/* Voz */
-function toggleVoice(){
-  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){speak('Reconocimiento de voz no disponible. Usa Chrome.');return;}
-  voiceOn=!voiceOn;
-  document.getElementById('ab-voice').classList.toggle('on',voiceOn);
-  if(!voiceOn){if(recognition)recognition.stop();document.getElementById('voice-ind').classList.remove('show');return;}
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  recognition=new SR();recognition.lang='es-ES';recognition.continuous=true;recognition.interimResults=false;
-  recognition.onstart=()=>{document.getElementById('voice-ind').classList.add('show');document.getElementById('voice-ind').textContent='Escuchando...';};
-  recognition.onresult=e=>{const cmd=e.results[e.results.length-1][0].transcript.toLowerCase().trim();document.getElementById('voice-ind').textContent='"'+cmd+'"';processCmd(cmd);};
-  recognition.onerror=e=>{if(e.error!=='no-speech')toast('Error voz: '+e.error);};
-  recognition.onend=()=>{if(voiceOn)recognition.start();};
-  recognition.start();
-  speak('Comandos de voz activados. Di siguiente, anterior, leer, o el nombre de una figura.');
-}
-function processCmd(c){
-  if(c.includes('siguiente')){nextFig();return;}
-  if(c.includes('anterior')||c.includes('atras')){prevFig();return;}
-  if(c.includes('leer')||c.includes('describir')){speakCurrent();return;}
-  if(c.includes('detener')||c.includes('para')){stopSpeech();return;}
-  if(c.includes('contraste')){toggleContrast();return;}
-  if(c.includes('subtitulo')){toggleSubs();return;}
-  if(c.includes('texto grande')){setSize('t-lg');return;}
-  if(c.includes('texto normal')){setSize('');return;}
-  if(c.includes('informacion')||c.includes('info')){toggleInfo();return;}
-  const i=FIGS.findIndex(f=>c.includes(f.nombre.toLowerCase())||c.includes(f.id));
-  if(i!==-1)selectFig(i);
-}
+    /* ─── ACCESSIBILITY TOOLBAR ─── */
+    .a11y-bar {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .a11y-bar label {
+      font-size: calc(var(--font-size) * 0.78);
+      color: var(--text-dim);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-right: 0.25rem;
+    }
+    .a11y-btn {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.45rem 0.9rem;
+      font-size: calc(var(--icon-size) * 0.85);
+      cursor: pointer;
+      transition: background 0.18s, border-color 0.18s, transform 0.1s;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .a11y-btn:hover, .a11y-btn:focus {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+      outline: none;
+      transform: scale(1.05);
+    }
+    .a11y-btn.active {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+    .a11y-sep { width: 1px; background: var(--border); height: 32px; margin: 0 0.25rem; }
 
-/* Figuras */
-function selectFig(i){
-  curIdx=i;
-  document.querySelectorAll('.fig-card').forEach((c,j)=>{c.classList.toggle('sel',j===i);c.setAttribute('aria-pressed',j===i);});
-  document.getElementById('fig-indicator').textContent=FIGS[i].nombre;
-  updateFigInfo(FIGS[i]);
-  if(xrSession||placed)swapMesh();
-}
-function nextFig(){selectFig((curIdx+1)%FIGS.length);speakCurrent();}
-function prevFig(){selectFig((curIdx-1+FIGS.length)%FIGS.length);speakCurrent();}
-function updateFigInfo(f){document.getElementById('fi-name').textContent=f.nombre;document.getElementById('fi-name').style.color=f.colorStr;document.getElementById('fi-formula').textContent=f.formula;document.getElementById('fi-desc').textContent=f.desc;}
-function toggleInfo(){infoOpen=!infoOpen;document.getElementById('fig-info').classList.toggle('show',infoOpen);document.getElementById('reticle-hint').style.display=infoOpen?'none':'block';if(infoOpen)speak(FIGS[curIdx].nombre+'. '+FIGS[curIdx].desc+'. Formula: '+FIGS[curIdx].formula);}
-function closeFigInfo(){infoOpen=false;document.getElementById('fig-info').classList.remove('show');}
+    /* ─── MAIN LAYOUT ─── */
+    main {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 0;
+      height: calc(100vh - 110px);
+    }
+    @media (max-width: 768px) {
+      main { grid-template-columns: 1fr; height: auto; }
+    }
 
-/* Three.js */
-function initThree(){
-  const canvas=document.getElementById('c');
-  renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-  renderer.setSize(window.innerWidth,window.innerHeight);
-  renderer.xr.enabled=true;
-  scene=new THREE.Scene();
-  camera=new THREE.PerspectiveCamera(70,window.innerWidth/window.innerHeight,0.01,40);
-  clock=new THREE.Clock();
-  scene.add(new THREE.AmbientLight(0xffffff,0.7));
-  const dl=new THREE.DirectionalLight(0xffffff,0.9);dl.position.set(2,4,3);scene.add(dl);
-  const pl=new THREE.PointLight(0x00e5ff,0.5,8);pl.position.set(-1,2,1);scene.add(pl);
-  const rg=new THREE.RingGeometry(0.06,0.1,32);rg.rotateX(-Math.PI/2);
-  reticleMesh=new THREE.Mesh(rg,new THREE.MeshBasicMaterial({color:0x00e5ff,opacity:0.85,transparent:true,side:THREE.DoubleSide}));
-  reticleMesh.visible=false;scene.add(reticleMesh);
-  window.addEventListener('resize',()=>{if(!xrSession){camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);}});
-  renderer.setAnimationLoop(demoLoop);
-}
+    /* ─── 3D SCENE AREA ─── */
+    .scene-area {
+      position: relative;
+      background: var(--bg);
+      overflow: hidden;
+    }
+    #scene-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    a-scene {
+      width: 100% !important;
+      height: 100% !important;
+    }
 
-function swapMesh(){
-  if(currentMesh){scene.remove(currentMesh);currentMesh=null;}
-  currentMesh=FIGS[curIdx].make(0.15);
-  if(placed&&reticleMesh){currentMesh.position.copy(reticleMesh.position);currentMesh.position.y+=0.1;}
-  else currentMesh.position.set(0,0,-0.5);
-  scene.add(currentMesh);
-}
+    /* Overlay con instrucciones */
+    .scene-overlay {
+      position: absolute;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.4rem 1rem;
+      font-size: calc(var(--font-size) * 0.82);
+      color: var(--accent);
+      pointer-events: none;
+      text-align: center;
+      white-space: nowrap;
+      z-index: 10;
+    }
 
-function placeFigure(){
-  if(!reticleMesh.visible)return;
-  placed=true;
-  if(currentMesh)scene.remove(currentMesh);
-  currentMesh=FIGS[curIdx].make(0.15);
-  currentMesh.position.copy(reticleMesh.position);
-  currentMesh.position.y+=0.1;
-  scene.add(currentMesh);
-  document.getElementById('reticle-hint').style.display='none';
-  speak(FIGS[curIdx].nombre+' colocada. '+FIGS[curIdx].narracion);
-  if(!infoOpen)toggleInfo();
-}
+    /* Subtítulos */
+    #subtitles {
+      position: absolute;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      border: 2px solid var(--accent);
+      border-radius: 10px;
+      padding: 0.55rem 1.2rem;
+      font-size: calc(var(--font-size) * 1);
+      max-width: 90%;
+      text-align: center;
+      display: none;
+      z-index: 20;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+    #subtitles.visible { display: block; }
 
-function demoLoop(){if(currentMesh)currentMesh.rotation.y=clock.getElapsedTime();renderer.render(scene,camera);}
+    /* Botones de control de escena */
+    .scene-controls {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.6rem;
+      z-index: 15;
+    }
+    .scene-btn {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 0.6rem 1.2rem;
+      font-size: calc(var(--font-size) * 0.88);
+      cursor: pointer;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.18s;
+    }
+    .scene-btn:hover, .scene-btn:focus {
+      background: var(--accent);
+      color: #000;
+      outline: none;
+    }
+    .scene-btn.primary {
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      border-color: var(--accent);
+    }
 
-/* WebXR */
-async function startAR(){
-  if(!webXRSupported){startDemoMode();return;}
-  try{
-    xrSession=await navigator.xr.requestSession('immersive-ar',{requiredFeatures:['hit-test'],optionalFeatures:['dom-overlay','local-floor'],domOverlay:{root:document.body}});
-    renderer.xr.setReferenceSpaceType('local');
-    await renderer.xr.setSession(xrSession);
-    xrSession.addEventListener('end',onXREnd);
-    const vs=await xrSession.requestReferenceSpace('viewer');
-    hitTestSource=await xrSession.requestHitTestSource({space:vs});
-    xrRefSpace=await xrSession.requestReferenceSpace('local');
-    document.addEventListener('touchend',onTap,{passive:true});
-    document.getElementById('home').style.display='none';
-    document.getElementById('btn-start-ar').style.display='none';
-    document.getElementById('ar-overlay').classList.add('active');
-    document.getElementById('reticle-hint').style.display='block';
-    selectFig(curIdx);
-    renderer.setAnimationLoop(xrLoop);
-    speak('Realidad Aumentada iniciada. Apunta la camara a una superficie plana y toca para colocar la figura.');
-  }catch(e){console.warn('WebXR:',e);toast('Cambiando a modo 3D');startDemoMode();}
-}
+    /* ─── PANEL LATERAL ─── */
+    .panel {
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
-function xrLoop(ts,frame){
-  if(!frame)return;
-  if(hitTestSource){
-    const r=frame.getHitTestResults(hitTestSource);
-    if(r.length>0){const p=r[0].getPose(xrRefSpace);reticleMesh.visible=true;reticleMesh.matrix.fromArray(p.transform.matrix);reticleMesh.matrix.decompose(reticleMesh.position,reticleMesh.quaternion,reticleMesh.scale);document.getElementById('reticle-hint').style.display='none';}
-    else{reticleMesh.visible=false;if(!placed)document.getElementById('reticle-hint').style.display='block';}
-  }
-  if(currentMesh)currentMesh.rotation.y+=0.015;
-  renderer.render(scene,camera);
-}
+    .panel-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-dim);
+      padding: 0.75rem;
+      font-size: calc(var(--font-size) * 0.85);
+      cursor: pointer;
+      transition: all 0.18s;
+      font-weight: 600;
+    }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .tab-btn:hover { color: var(--text); }
 
-function onTap(){if(xrSession&&reticleMesh.visible)placeFigure();}
+    .tab-content { display: none; flex: 1; overflow-y: auto; padding: 1rem; }
+    .tab-content.active { display: flex; flex-direction: column; gap: 0.75rem; }
 
-function onXREnd(){
-  xrSession=null;hitTestSource=null;placed=false;
-  document.removeEventListener('touchend',onTap);
-  renderer.setAnimationLoop(null);
-  document.getElementById('ar-overlay').classList.remove('active');
-  document.getElementById('home').style.display='flex';
-  document.getElementById('btn-start-ar').style.display='block';
-  if(currentMesh){scene.remove(currentMesh);currentMesh=null;}
-  renderer.setAnimationLoop(demoLoop);
-}
-function exitAR(){if(xrSession)xrSession.end();else stopDemoMode();}
+    /* Tarjetas de figuras */
+    .figure-card {
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .figure-card:hover, .figure-card:focus, .figure-card.selected {
+      border-color: var(--accent);
+      box-shadow: var(--shadow);
+      outline: none;
+    }
+    .figure-card.selected { background: rgba(0,229,255,0.06); }
+    .figure-card .fig-header {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin-bottom: 0.5rem;
+    }
+    .fig-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+      color: #000;
+    }
+    .fig-name {
+      font-size: calc(var(--font-size) * 1.05);
+      font-weight: 700;
+      color: var(--text);
+    }
+    .fig-formula {
+      font-size: calc(var(--font-size) * 0.78);
+      color: var(--accent);
+      font-family: 'Courier New', monospace;
+      background: rgba(0,229,255,0.08);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+    }
+    .fig-desc {
+      font-size: calc(var(--font-size) * 0.83);
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    .btn-read {
+      margin-top: 0.6rem;
+      width: 100%;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--accent);
+      padding: 0.45rem;
+      cursor: pointer;
+      font-size: calc(var(--font-size) * 0.82);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      min-height: 40px;
+      transition: all 0.15s;
+    }
+    .btn-read:hover, .btn-read:focus {
+      background: var(--accent);
+      color: #000;
+      outline: none;
+    }
 
-function startDemoMode(){
-  document.getElementById('home').style.display='none';
-  document.getElementById('btn-start-ar').style.display='none';
-  document.getElementById('ar-overlay').classList.add('active');
-  document.getElementById('reticle-hint').textContent='Toca una figura en el panel o usa los botones para navegar';
-  camera.position.set(0,0.3,0.7);camera.lookAt(0,0.1,0);
-  placed=true;swapMesh();
-  let tx0=0;
-  document.getElementById('c').addEventListener('touchstart',e=>{tx0=e.touches[0].clientX;},{passive:true});
-  document.getElementById('c').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx0;if(dx>50)prevFig();else if(dx<-50)nextFig();},{passive:true});
-  selectFig(curIdx);
-  speak('Modo 3D interactivo. Desliza para cambiar de figura o usa los botones.');
-}
-function stopDemoMode(){
-  document.getElementById('ar-overlay').classList.remove('active');
-  document.getElementById('home').style.display='flex';
-  document.getElementById('btn-start-ar').style.display='block';
-  if(currentMesh){scene.remove(currentMesh);currentMesh=null;}
-  placed=false;
-}
+    /* ─── INFO PANEL ─── */
+    .info-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .info-box h3 {
+      font-size: calc(var(--font-size) * 0.95);
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .info-box p {
+      font-size: calc(var(--font-size) * 0.83);
+      color: var(--text-dim);
+      line-height: 1.55;
+    }
 
-/* Carrusel */
-function buildCarousel(){
-  const cont=document.getElementById('carousel');
-  FIGS.forEach((f,i)=>{
-    const d=document.createElement('div');
-    d.className='fig-card'+(i===0?' sel':'');
-    d.setAttribute('role','listitem');d.setAttribute('tabindex','0');
-    d.setAttribute('aria-label',f.nombre+'. '+f.desc+' Seleccionar figura.');
-    d.setAttribute('aria-pressed',i===0);
-    d.innerHTML='<div class="fig-icon" style="background:'+f.colorStr+'33;border:1.5px solid '+f.colorStr+';color:'+f.colorStr+'">'+f.abrev+'</div>'
-      +'<div class="fig-label">'+f.nombre+'</div>'
-      +'<div class="fig-formula">'+f.formula+'</div>'
-      +'<p class="fig-desc">'+f.desc+'</p>'
-      +'<button class="btn-narrar" aria-label="Leer descripcion de '+f.nombre+'">Leer descripcion</button>';
-    d.querySelector('.btn-narrar').addEventListener('click',e=>{e.stopPropagation();selectFig(i);speak(f.nombre+'. '+f.narracion);});
-    d.addEventListener('click',()=>selectFig(i));
-    d.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')selectFig(i);});
-    cont.appendChild(d);
-  });
-}
+    /* Propiedades de figura */
+    .prop-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: calc(var(--font-size) * 0.84);
+    }
+    .prop-row:last-child { border-bottom: none; }
+    .prop-label { color: var(--text-dim); }
+    .prop-val { color: var(--text); font-weight: 600; font-family: monospace; }
 
-async function init(){
-  buildCarousel();initThree();updateFigInfo(FIGS[0]);
-  if(navigator.xr)webXRSupported=await navigator.xr.isSessionSupported('immersive-ar').catch(()=>false);
-  if(!webXRSupported){document.getElementById('no-xr').style.display='block';document.getElementById('btn-start-ar').textContent='Iniciar modo 3D';}
-  document.getElementById('ab-subs').classList.add('on');
-  setTimeout(()=>{
-    document.getElementById('loading').style.opacity='0';
-    setTimeout(()=>document.getElementById('loading').remove(),400);
-    setTimeout(()=>speak(webXRSupported?'Bienvenido a Matematicas en Realidad Aumentada. Selecciona una figura y presiona Iniciar AR.':'Bienvenido a Matematicas en 3D. Selecciona una figura y presiona Iniciar modo 3D.'),600);
-  },1000);
-}
-window.addEventListener('load',init);
-</script>
+    /* ─── VOZ / COMANDOS ─── */
+    #voice-status {
+      position: fixed;
+      top: 70px;
+      right: 1rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.5rem 0.9rem;
+      font-size: calc(var(--font-size) * 0.8);
+      color: var(--text-dim);
+      z-index: 200;
+      display: none;
+      max-width: 220px;
+    }
+    #voice-status.active { display: block; border-color: var(--accent2); color: var(--accent2); }
+
+    /* ─── COMANDOS DE VOZ BADGE ─── */
+    .voice-badge {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255,64,129,0.1);
+      border: 1px solid var(--accent2);
+      border-radius: 20px;
+      padding: 0.2rem 0.55rem;
+      font-size: calc(var(--font-size) * 0.75);
+      color: var(--accent2);
+      margin: 0.2rem;
+      font-family: monospace;
+    }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--surface); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ─── FOCUS VISIBLE ─── */
+    *:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* ─── TAMAÑOS DE TEXTO ─── */
+    body.text-md { --font-size: 1rem;    --icon-size: 1.4rem; }
+    body.text-lg { --font-size: 1.18rem; --icon-size: 1.6rem; }
+    body.text-xl { --font-size: 1.38rem; --icon-size: 1.85rem; }
+
+    /* ─── ANIMACIÓN SELECCIÓN ─── */
+    @keyframes pulse-border {
+      0%,100% { box-shadow: 0 0 0 0 rgba(0,229,255,0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(0,229,255,0); }
+    }
+    .figure-card.selected { animation: pulse-border 2s infinite; }
+
+    /* Loading screen */
+    #loading {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      gap: 1rem;
+      transition: opacity 0.5s;
+    }
+    #loading .spinner {
+      width: 48px; height: 48px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading p { color: var(--text-dim); font-size: 0.9rem; }
+  </style>
+</head>
+<body class="text-md" aria-label="Aplicación de Matemáticas en Realidad Aumentada">
+
+  <!-- Loading -->
+  <div id="loading" role="status" aria-live="polite">
+    <div class="spinner"></div>
+    <p>Cargando Matemáticas en RA…</p>
+  </div>
+
+  <!-- Voz status -->
+  <div id="voice-status" role="status" aria-live="polite" aria-atomic="true">
+    🎙️ Escuchando…
+  </div>
+
+  <!-- ─── HEADER ─── -->
+  <header role="banner">
+    <div style="flex:1">
+      <h1>📐 Matemáticas en RA
+        <span class="subtitle">Figuras Geométricas con Accesibilidad Completa</span>
+      </h1>
+    </div>
+  </header>
+
+  <!-- ─── BARRA DE ACCESIBILIDAD ─── -->
+  <div class="a11y-bar" role="toolbar" aria-label="Herramientas de accesibilidad">
+    <label>Accesibilidad:</label>
+
+    <button class="a11y-btn" id="btn-contrast" onclick="toggleContrast()"
+      aria-label="Alternar alto contraste" title="Alto contraste">
+      🌓 Contraste
+    </button>
+
+    <div class="a11y-sep" role="separator"></div>
+
+    <label>Texto:</label>
+    <button class="a11y-btn" id="btn-sm" onclick="setTextSize('text-md')"
+      aria-label="Tamaño de texto normal" title="Texto normal">A</button>
+    <button class="a11y-btn" id="btn-md" onclick="setTextSize('text-lg')"
+      aria-label="Tamaño de texto grande" title="Texto grande">A+</button>
+    <button class="a11y-btn" id="btn-xl" onclick="setTextSize('text-xl')"
+      aria-label="Tamaño de texto muy grande" title="Texto muy grande">A++</button>
+
+    <div class="a11y-sep" role="separator"></div>
+
+    <button class="a11y-btn" id="btn-subtitles" onclick="toggleSubtitles()"
+      aria-label="Activar o desactivar subtítulos" title="Subtítulos">
+      💬 Subtítulos
+    </button>
+
+    <button class="a11y-btn" id="btn-voice-cmd" onclick="toggleVoiceCommands()"
+      aria-label="Activar comandos de voz" title="Comandos de voz">
+      🎙️ Voz
+    </button>
+
+    <button class="a11y-btn" id="btn-stop" onclick="stopSpeech()"
+      aria-label="Detener narración" title="Detener narración">
+      ⏹ Detener
+    </button>
+  </div>
+
+  <!-- ─── MAIN ─── -->
+  <main role="main">
+
+    <!-- ESCENA 3D / AR -->
+    <section class="scene-area" aria-label="Escena de Realidad Aumentada">
+      <div id="scene-container">
+
+        <a-scene
+          id="ar-scene"
+          embedded
+          renderer="antialias: true; colorManagement: true;"
+          vr-mode-ui="enabled: false"
+          style="width:100%;height:100%;">
+
+          <!-- Cámara -->
+          <a-entity camera look-controls wasd-controls position="0 1.6 4">
+            <a-cursor color="#00e5ff" fuse="true" fuse-timeout="1500"
+              raycaster="objects: .figura"
+              event-set__mouseenter="_event: mouseenter; color: #ff4081"
+              event-set__mouseleave="_event: mouseleave; color: #00e5ff">
+            </a-cursor>
+          </a-entity>
+
+          <!-- Iluminación -->
+          <a-light type="ambient" color="#ffffff" intensity="0.6"></a-light>
+          <a-light type="directional" position="5 8 5" color="#ffffff" intensity="0.8"></a-light>
+          <a-light type="point" position="-3 3 3" color="#00e5ff" intensity="0.3"></a-light>
+
+          <!-- Suelo -->
+          <a-plane position="0 0 -1" rotation="-90 0 0" width="12" height="12"
+            color="#0a0a1a" opacity="0.8" shadow></a-plane>
+
+          <!-- Grid lines decorativas -->
+          <a-entity position="0 0.01 -1">
+            <a-plane rotation="-90 0 0" width="10" height="10"
+              src="#grid" opacity="0.15" color="#00e5ff"></a-plane>
+          </a-entity>
+
+          <!-- ══ FIGURAS GEOMÉTRICAS ══ -->
+
+          <!-- 1. CUBO -->
+          <a-box id="fig-cubo" class="figura"
+            position="-3.5 0.75 -2"
+            width="1.4" height="1.4" depth="1.4"
+            color="#00e5ff"
+            shadow
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 8000; easing: linear"
+            data-nombre="Cubo"
+            data-desc="El cubo es un poliedro regular de 6 caras cuadradas iguales. Tiene 8 vértices y 12 aristas. Su volumen se calcula como lado al cubo."
+            cursor-listener>
+          </a-box>
+          <a-text value="Cubo" position="-3.5 1.7 -2" align="center"
+            color="#ffffff" width="2.5" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt">
+          </a-text>
+
+          <!-- 2. ESFERA -->
+          <a-sphere id="fig-esfera" class="figura"
+            position="-1.2 0.9 -2"
+            radius="0.85"
+            color="#ff4081"
+            shadow
+            animation="property: scale; to: 1.08 1.08 1.08; dir: alternate; loop: true; dur: 2000; easing: easeInOutSine"
+            data-nombre="Esfera"
+            data-desc="La esfera es el conjunto de todos los puntos del espacio que están a igual distancia de un punto llamado centro. Su volumen es 4 tercios de pi por radio al cubo."
+            cursor-listener>
+          </a-sphere>
+          <a-text value="Esfera" position="-1.2 2 -2" align="center"
+            color="#ffffff" width="2.5" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt">
+          </a-text>
+
+          <!-- 3. CONO -->
+          <a-cone id="fig-cono" class="figura"
+            position="1.2 0.9 -2"
+            radius-bottom="0.85" height="1.7"
+            color="#ffd740"
+            shadow
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear"
+            data-nombre="Cono"
+            data-desc="El cono es un sólido geométrico formado por una base circular y una superficie lateral que termina en un vértice. Su volumen es un tercio de pi por radio cuadrado por altura."
+            cursor-listener>
+          </a-cone>
+          <a-text value="Cono" position="1.2 1.85 -2" align="center"
+            color="#ffffff" width="2.5" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt">
+          </a-text>
+
+          <!-- 4. CILINDRO -->
+          <a-cylinder id="fig-cilindro" class="figura"
+            position="3.5 0.9 -2"
+            radius="0.7" height="1.6"
+            color="#69f0ae"
+            shadow
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 7000; easing: linear"
+            data-nombre="Cilindro"
+            data-desc="El cilindro es un sólido geométrico con dos bases circulares paralelas e iguales unidas por una superficie lateral. Su volumen es pi por radio cuadrado por altura."
+            cursor-listener>
+          </a-cylinder>
+          <a-text value="Cilindro" position="3.5 1.85 -2" align="center"
+            color="#ffffff" width="2.5" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt">
+          </a-text>
+
+          <!-- 5. PIRÁMIDE (tetraedro aproximado) -->
+          <a-entity id="fig-piramide" class="figura"
+            position="0 0 -4.5"
+            data-nombre="Pirámide"
+            data-desc="La pirámide es un poliedro con una base poligonal y caras triangulares que convergen en un vértice o ápice. Su volumen es un tercio de la base por la altura."
+            cursor-listener>
+            <a-cone radius-bottom="1.2" height="2.2" color="#ce93d8" shadow
+              animation="property: rotation; to: 0 360 0; loop: true; dur: 9000; easing: linear">
+            </a-cone>
+            <a-text value="Pirámide" position="0 1.4 0" align="center"
+              color="#ffffff" width="2.5" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt">
+            </a-text>
+          </a-entity>
+
+          <!-- Fondo nebuloso -->
+          <a-sky color="#050510"></a-sky>
+        </a-scene>
+
+        <!-- Subtítulos -->
+        <div id="subtitles" role="status" aria-live="polite" aria-atomic="true"></div>
+
+        <!-- Overlay instrucciones -->
+        <div class="scene-overlay" role="note">
+          🖱️ Arrastra para rotar · 🔍 Scroll para zoom · 👆 Clic en figura para info
+        </div>
+
+        <!-- Controles de escena -->
+        <div class="scene-controls" role="group" aria-label="Controles de escena">
+          <button class="scene-btn" onclick="prevFigure()" aria-label="Figura anterior">
+            ◀ Anterior
+          </button>
+          <button class="scene-btn primary" onclick="readCurrentFigure()" aria-label="Leer descripción de figura seleccionada">
+            🔊 Leer
+          </button>
+          <button class="scene-btn" onclick="nextFigure()" aria-label="Siguiente figura">
+            Siguiente ▶
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ─── PANEL LATERAL ─── -->
+    <aside class="panel" role="complementary" aria-label="Información y figuras">
+
+      <div class="panel-tabs" role="tablist">
+        <button class="tab-btn active" role="tab" aria-selected="true"
+          onclick="switchTab('figuras', this)" id="tab-figuras">
+          📐 Figuras
+        </button>
+        <button class="tab-btn" role="tab" aria-selected="false"
+          onclick="switchTab('info', this)" id="tab-info">
+          ℹ️ Detalle
+        </button>
+        <button class="tab-btn" role="tab" aria-selected="false"
+          onclick="switchTab('voz', this)" id="tab-voz">
+          🎙️ Comandos
+        </button>
+      </div>
+
+      <!-- TAB: Figuras -->
+      <div class="tab-content active" id="tab-figuras-content" role="tabpanel" aria-labelledby="tab-figuras">
+
+        <div class="figure-card" id="card-cubo" tabindex="0"
+          onclick="selectFigure(0)" onkeydown="if(event.key==='Enter')selectFigure(0)"
+          role="button" aria-label="Cubo. Haz clic para seleccionar y escuchar descripción.">
+          <div class="fig-header">
+            <div class="fig-icon">⬛</div>
+            <div>
+              <div class="fig-name">Cubo</div>
+              <div class="fig-formula">V = a³</div>
+            </div>
+          </div>
+          <p class="fig-desc">Poliedro regular con 6 caras cuadradas, 8 vértices y 12 aristas.</p>
+          <button class="btn-read" onclick="event.stopPropagation(); readFigure(0)"
+            aria-label="Leer descripción del Cubo en voz alta">
+            🔊 Leer descripción
+          </button>
+        </div>
+
+        <div class="figure-card" id="card-esfera" tabindex="0"
+          onclick="selectFigure(1)" onkeydown="if(event.key==='Enter')selectFigure(1)"
+          role="button" aria-label="Esfera. Haz clic para seleccionar y escuchar descripción.">
+          <div class="fig-header">
+            <div class="fig-icon" style="background:#ff4081">🔴</div>
+            <div>
+              <div class="fig-name">Esfera</div>
+              <div class="fig-formula">V = 4/3 π r³</div>
+            </div>
+          </div>
+          <p class="fig-desc">Superficie curva donde todos los puntos equidistan del centro.</p>
+          <button class="btn-read" onclick="event.stopPropagation(); readFigure(1)"
+            aria-label="Leer descripción de la Esfera en voz alta">
+            🔊 Leer descripción
+          </button>
+        </div>
+
+        <div class="figure-card" id="card-cono" tabindex="0"
+          onclick="selectFigure(2)" onkeydown="if(event.key==='Enter')selectFigure(2)"
+          role="button" aria-label="Cono. Haz clic para seleccionar y escuchar descripción.">
+          <div class="fig-header">
+            <div class="fig-icon" style="background:#ffd740; color:#000">🔺</div>
+            <div>
+              <div class="fig-name">Cono</div>
+              <div class="fig-formula">V = 1/3 π r² h</div>
+            </div>
+          </div>
+          <p class="fig-desc">Base circular con superficie lateral que converge en un vértice.</p>
+          <button class="btn-read" onclick="event.stopPropagation(); readFigure(2)"
+            aria-label="Leer descripción del Cono en voz alta">
+            🔊 Leer descripción
+          </button>
+        </div>
+
+        <div class="figure-card" id="card-cilindro" tabindex="0"
+          onclick="selectFigure(3)" onkeydown="if(event.key==='Enter')selectFigure(3)"
+          role="button" aria-label="Cilindro. Haz clic para seleccionar y escuchar descripción.">
+          <div class="fig-header">
+            <div class="fig-icon" style="background:#69f0ae; color:#000">🟢</div>
+            <div>
+              <div class="fig-name">Cilindro</div>
+              <div class="fig-formula">V = π r² h</div>
+            </div>
+          </div>
+          <p class="fig-desc">Dos bases circulares paralelas unidas por superficie lateral.</p>
+          <button class="btn-read" onclick="event.stopPropagation(); readFigure(3)"
+            aria-label="Leer descripción del Cilindro en voz alta">
+            🔊 Leer descripción
+          </button>
+        </div>
+
+        <div class="figure-card" id="card-piramide" tabindex="0"
+          onclick="selectFigure(4)" onkeydown="if(event.key==='Enter')selectFigure(4)"
+          role="button" aria-label="Pirámide. Haz clic para seleccionar y escuchar descripción.">
+          <div class="fig-header">
+            <div class="fig-icon" style="background:#ce93d8; color:#000">🔷</div>
+            <div>
+              <div class="fig-name">Pirámide</div>
+              <div class="fig-formula">V = 1/3 A·h</div>
+            </div>
+          </div>
+          <p class="fig-desc">Poliedro con base poligonal y caras triangulares en un ápice.</p>
+          <button class="btn-read" onclick="event.stopPropagation(); readFigure(4)"
+            aria-label="Leer descripción de la Pirámide en voz alta">
+            🔊 Leer descripción
+          </button>
+        </div>
+
+      </div>
+
+      <!-- TAB: Info / Detalle -->
+      <div class="tab-content" id="tab-info-content" role="tabpanel" aria-labelledby="tab-info">
+        <div class="info-box" id="detail-box" aria-live="polite">
+          <h3>📐 Selecciona una figura</h3>
+          <p>Haz clic en una figura en la escena 3D o en el panel de figuras para ver sus propiedades matemáticas.</p>
+        </div>
+      </div>
+
+      <!-- TAB: Comandos de voz -->
+      <div class="tab-content" id="tab-voz-content" role="tabpanel" aria-labelledby="tab-voz">
+        <div class="info-box">
+          <h3>🎙️ Comandos Disponibles</h3>
+          <p style="margin-bottom:0.75rem">Activa la voz con el botón <strong>🎙️ Voz</strong> y di:</p>
+          <div>
+            <span class="voice-badge">"siguiente"</span>
+            <span class="voice-badge">"anterior"</span>
+            <span class="voice-badge">"leer"</span>
+            <span class="voice-badge">"describir"</span>
+            <span class="voice-badge">"cubo"</span>
+            <span class="voice-badge">"esfera"</span>
+            <span class="voice-badge">"cono"</span>
+            <span class="voice-badge">"cilindro"</span>
+            <span class="voice-badge">"pirámide"</span>
+            <span class="voice-badge">"contraste"</span>
+            <span class="voice-badge">"subtítulos"</span>
+            <span class="voice-badge">"detener"</span>
+            <span class="voice-badge">"texto grande"</span>
+            <span class="voice-badge">"texto normal"</span>
+          </div>
+        </div>
+        <div class="info-box">
+          <h3>🖱️ Gestos y Navegación</h3>
+          <p>• <strong>Arrastrar</strong>: rotar la escena<br>
+             • <strong>Scroll</strong>: acercar/alejar<br>
+             • <strong>Clic en figura</strong>: seleccionar y narrar<br>
+             • <strong>Cursor flotante</strong>: apunta 1.5s para activar<br>
+             • <strong>Teclado</strong>: Tab para navegar, Enter para seleccionar</p>
+        </div>
+        <div class="info-box">
+          <h3>♿ Accesibilidad</h3>
+          <p>Compatible con lectores de pantalla. Todos los elementos tienen etiquetas ARIA. Usa Tab y Enter para navegar sin ratón ni táctil.</p>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- ─── JAVASCRIPT ─── -->
+  <script>
+    // ═══════════════════════════════════════════════════
+    // DATOS DE LAS FIGURAS
+    // ═══════════════════════════════════════════════════
+    const figuras = [
+      {
+        id: 'cubo', nombre: 'Cubo', icono: '⬛', color: '#00e5ff',
+        formula: 'V = a³   |   A = 6a²',
+        descripcion: 'El cubo es un poliedro regular compuesto por 6 caras cuadradas iguales. Tiene 8 vértices y 12 aristas. Todos sus ángulos son rectos. Es uno de los 5 sólidos platónicos.',
+        narracion: 'El cubo es un poliedro regular con 6 caras cuadradas. Para calcular su volumen, elevamos el lado al cubo. Su área total es 6 veces el lado al cuadrado. Tiene 8 vértices y 12 aristas.',
+        propiedades: {
+          'Caras': '6 cuadradas', 'Vértices': '8', 'Aristas': '12',
+          'Volumen': 'V = a³', 'Área total': 'A = 6a²', 'Diagonales del espacio': '4'
+        }
+      },
+      {
+        id: 'esfera', nombre: 'Esfera', icono: '🔴', color: '#ff4081',
+        formula: 'V = 4/3 πr³   |   A = 4πr²',
+        descripcion: 'La esfera es el lugar geométrico de todos los puntos del espacio que equidistan de un punto fijo llamado centro. Es perfectamente simétrica en todas las direcciones.',
+        narracion: 'La esfera es una figura perfectamente redonda. Todos sus puntos están a la misma distancia del centro, llamada radio. Su volumen es 4 tercios de pi por el radio al cubo. Su área es 4 veces pi por el radio al cuadrado.',
+        propiedades: {
+          'Caras': '1 curva', 'Aristas': '0', 'Vértices': '0',
+          'Volumen': 'V = 4/3 πr³', 'Área': 'A = 4πr²', 'Simetría': 'Perfecta'
+        }
+      },
+      {
+        id: 'cono', nombre: 'Cono', icono: '🔺', color: '#ffd740',
+        formula: 'V = 1/3 πr²h   |   A = πr(r+g)',
+        descripcion: 'El cono es un sólido geométrico con una base circular plana y una superficie lateral curva que converge en un punto llamado vértice o ápice.',
+        narracion: 'El cono tiene una base circular y una superficie lateral que termina en un punto llamado vértice. Su volumen es un tercio de pi por el radio al cuadrado por la altura. La línea desde el vértice hasta el borde de la base es la generatriz.',
+        propiedades: {
+          'Caras': '1 curva + 1 base', 'Aristas': '1 (circular)', 'Vértices': '1',
+          'Volumen': 'V = 1/3 πr²h', 'Área lateral': 'A = πrg', 'Sección': 'Circular'
+        }
+      },
+      {
+        id: 'cilindro', nombre: 'Cilindro', icono: '🟢', color: '#69f0ae',
+        formula: 'V = πr²h   |   A = 2πr(r+h)',
+        descripcion: 'El cilindro es un sólido geométrico formado por dos bases circulares paralelas e iguales conectadas por una superficie lateral curva. Es generado por la rotación de un rectángulo.',
+        narracion: 'El cilindro tiene dos bases circulares iguales y una superficie lateral. Su volumen es pi por el radio al cuadrado por la altura. Para calcular el área total, sumamos las dos bases y la superficie lateral.',
+        propiedades: {
+          'Caras': '2 circulares + 1 lateral', 'Aristas': '2 circulares', 'Vértices': '0',
+          'Volumen': 'V = πr²h', 'Área total': 'A = 2πr(r+h)', 'Sección': 'Circular'
+        }
+      },
+      {
+        id: 'piramide', nombre: 'Pirámide', icono: '🔷', color: '#ce93d8',
+        formula: 'V = 1/3 · A_base · h',
+        descripcion: 'La pirámide es un poliedro con una base poligonal y caras laterales triangulares que se unen en un punto común llamado ápice. La pirámide cuadrangular es la más conocida.',
+        narracion: 'La pirámide tiene una base poligonal y caras triangulares que convergen en un punto llamado ápice. Su volumen es un tercio del área de la base multiplicado por la altura. Las pirámides de Egipto son el ejemplo más famoso.',
+        propiedades: {
+          'Base': 'Poligonal', 'Caras laterales': 'Triangulares', 'Vértices': 'n+1',
+          'Volumen': 'V = 1/3 · A·h', 'Tipo común': 'Cuadrangular', 'Aristas': '2n'
+        }
+      }
+    ];
+
+    // ═══════════════════════════════════════════════════
+    // ESTADO GLOBAL
+    // ═══════════════════════════════════════════════════
+    let currentIndex = 0;
+    let subtitlesEnabled = true;
+    let voiceEnabled = false;
+    let recognition = null;
+    let isSpeaking = false;
+
+    // ═══════════════════════════════════════════════════
+    // NARRACIÓN (Text-to-Speech)
+    // ═══════════════════════════════════════════════════
+    function speak(text, onEnd) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'es-ES';
+      utter.rate = 0.92;
+      utter.pitch = 1.05;
+
+      if (subtitlesEnabled) showSubtitle(text);
+
+      utter.onstart = () => { isSpeaking = true; };
+      utter.onend = () => {
+        isSpeaking = false;
+        hideSubtitle();
+        if (onEnd) onEnd();
+      };
+      utter.onerror = () => { isSpeaking = false; hideSubtitle(); };
+
+      window.speechSynthesis.speak(utter);
+    }
+
+    function stopSpeech() {
+      window.speechSynthesis.cancel();
+      hideSubtitle();
+      isSpeaking = false;
+    }
+
+    // ═══════════════════════════════════════════════════
+    // SUBTÍTULOS
+    // ═══════════════════════════════════════════════════
+    function showSubtitle(text) {
+      const el = document.getElementById('subtitles');
+      if (!subtitlesEnabled) return;
+      // Acortar para subtítulo
+      const short = text.length > 120 ? text.substring(0, 120) + '…' : text;
+      el.textContent = short;
+      el.classList.add('visible');
+    }
+
+    function hideSubtitle() {
+      setTimeout(() => {
+        document.getElementById('subtitles').classList.remove('visible');
+      }, 800);
+    }
+
+    function toggleSubtitles() {
+      subtitlesEnabled = !subtitlesEnabled;
+      const btn = document.getElementById('btn-subtitles');
+      btn.classList.toggle('active', subtitlesEnabled);
+      btn.setAttribute('aria-pressed', subtitlesEnabled);
+      speak(subtitlesEnabled ? 'Subtítulos activados' : 'Subtítulos desactivados');
+    }
+
+    // ═══════════════════════════════════════════════════
+    // SELECCIÓN DE FIGURAS
+    // ═══════════════════════════════════════════════════
+    function selectFigure(index) {
+      currentIndex = index;
+      const fig = figuras[index];
+
+      // Actualizar cards
+      document.querySelectorAll('.figure-card').forEach((c, i) => {
+        c.classList.toggle('selected', i === index);
+        c.setAttribute('aria-pressed', i === index);
+      });
+
+      // Actualizar detalle
+      updateDetailPanel(fig);
+
+      // Cambiar a tab info
+      switchTab('info', document.getElementById('tab-info'));
+
+      // Narrar
+      readFigure(index);
+    }
+
+    function readFigure(index) {
+      const fig = figuras[index];
+      speak(`${fig.nombre}. ${fig.narracion}`);
+    }
+
+    function readCurrentFigure() { readFigure(currentIndex); }
+
+    function nextFigure() {
+      currentIndex = (currentIndex + 1) % figuras.length;
+      selectFigure(currentIndex);
+    }
+
+    function prevFigure() {
+      currentIndex = (currentIndex - 1 + figuras.length) % figuras.length;
+      selectFigure(currentIndex);
+    }
+
+    // ═══════════════════════════════════════════════════
+    // PANEL DE DETALLE
+    // ═══════════════════════════════════════════════════
+    function updateDetailPanel(fig) {
+      const box = document.getElementById('detail-box');
+      let propsHTML = '';
+      for (const [k, v] of Object.entries(fig.propiedades)) {
+        propsHTML += `<div class="prop-row">
+          <span class="prop-label">${k}</span>
+          <span class="prop-val">${v}</span>
+        </div>`;
+      }
+      box.innerHTML = `
+        <h3 style="color:${fig.color}">
+          <span>${fig.icono}</span> ${fig.nombre}
+        </h3>
+        <p style="margin-bottom:0.75rem; font-size:calc(var(--font-size)*0.85)">${fig.descripcion}</p>
+        <div style="background:rgba(0,229,255,0.07);border-radius:8px;padding:0.6rem 0.75rem;margin-bottom:0.6rem">
+          <span style="font-family:monospace;font-size:calc(var(--font-size)*0.9);color:var(--accent)">${fig.formula}</span>
+        </div>
+        ${propsHTML}
+      `;
+    }
+
+    // ═══════════════════════════════════════════════════
+    // TABS
+    // ═══════════════════════════════════════════════════
+    function switchTab(name, btn) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      document.getElementById(`tab-${name}-content`).classList.add('active');
+      if (btn) {
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+      }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // ACCESIBILIDAD: CONTRASTE Y TEXTO
+    // ═══════════════════════════════════════════════════
+    function toggleContrast() {
+      document.body.classList.toggle('high-contrast');
+      const on = document.body.classList.contains('high-contrast');
+      document.getElementById('btn-contrast').classList.toggle('active', on);
+      document.getElementById('btn-contrast').setAttribute('aria-pressed', on);
+      speak(on ? 'Alto contraste activado' : 'Contraste normal activado');
+    }
+
+    function setTextSize(cls) {
+      document.body.classList.remove('text-md', 'text-lg', 'text-xl');
+      document.body.classList.add(cls);
+      ['btn-sm','btn-md','btn-xl'].forEach(id => document.getElementById(id).classList.remove('active'));
+      const map = {'text-md':'btn-sm','text-lg':'btn-md','text-xl':'btn-xl'};
+      document.getElementById(map[cls]).classList.add('active');
+      const labels = {'text-md':'Texto normal','text-lg':'Texto grande','text-xl':'Texto muy grande'};
+      speak(labels[cls]);
+    }
+
+    // ═══════════════════════════════════════════════════
+    // COMANDOS DE VOZ
+    // ═══════════════════════════════════════════════════
+    function toggleVoiceCommands() {
+      if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        speak('Lo siento, tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
+        return;
+      }
+
+      if (voiceEnabled) {
+        voiceEnabled = false;
+        if (recognition) recognition.stop();
+        document.getElementById('btn-voice-cmd').classList.remove('active');
+        document.getElementById('voice-status').classList.remove('active');
+        speak('Comandos de voz desactivados');
+        return;
+      }
+
+      voiceEnabled = true;
+      document.getElementById('btn-voice-cmd').classList.add('active');
+
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SR();
+      recognition.lang = 'es-ES';
+      recognition.continuous = true;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        document.getElementById('voice-status').classList.add('active');
+        document.getElementById('voice-status').textContent = '🎙️ Escuchando…';
+      };
+
+      recognition.onresult = (e) => {
+        const cmd = e.results[e.results.length - 1][0].transcript.toLowerCase().trim();
+        document.getElementById('voice-status').textContent = `"${cmd}"`;
+        processVoiceCommand(cmd);
+      };
+
+      recognition.onerror = (e) => {
+        if (e.error !== 'no-speech') {
+          document.getElementById('voice-status').textContent = `Error: ${e.error}`;
+        }
+      };
+
+      recognition.onend = () => {
+        if (voiceEnabled) recognition.start(); // reiniciar continuo
+      };
+
+      recognition.start();
+      speak('Comandos de voz activados. Puedes decir: siguiente, anterior, leer, o el nombre de una figura.');
+    }
+
+    function processVoiceCommand(cmd) {
+      if (cmd.includes('siguiente')) { nextFigure(); return; }
+      if (cmd.includes('anterior') || cmd.includes('atrás')) { prevFigure(); return; }
+      if (cmd.includes('leer') || cmd.includes('describir') || cmd.includes('qué es')) {
+        readCurrentFigure(); return;
+      }
+      if (cmd.includes('detener') || cmd.includes('para') || cmd.includes('silencio')) {
+        stopSpeech(); return;
+      }
+      if (cmd.includes('contraste')) { toggleContrast(); return; }
+      if (cmd.includes('subtítulo')) { toggleSubtitles(); return; }
+      if (cmd.includes('texto grande') || cmd.includes('aumentar texto')) { setTextSize('text-xl'); return; }
+      if (cmd.includes('texto normal') || cmd.includes('texto pequeño')) { setTextSize('text-md'); return; }
+
+      // Navegar a figura por nombre
+      const idx = figuras.findIndex(f => cmd.includes(f.nombre.toLowerCase()));
+      if (idx !== -1) { selectFigure(idx); return; }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // A-FRAME: CURSOR / CLICK EN FIGURAS
+    // ═══════════════════════════════════════════════════
+    AFRAME.registerComponent('cursor-listener', {
+      init: function () {
+        this.el.addEventListener('click', () => {
+          const nombre = this.el.dataset.nombre;
+          const idx = figuras.findIndex(f => f.nombre === nombre);
+          if (idx !== -1) selectFigure(idx);
+        });
+        this.el.addEventListener('mouseenter', () => {
+          const nombre = this.el.dataset.nombre;
+          const fig = figuras.find(f => f.nombre === nombre);
+          if (fig && !isSpeaking) {
+            showSubtitle(`👆 ${fig.nombre} — ${fig.formula}`);
+          }
+        });
+        this.el.addEventListener('mouseleave', () => {
+          if (!isSpeaking) hideSubtitle();
+        });
+      }
+    });
+
+    // ═══════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('loading').style.opacity = '0';
+        setTimeout(() => document.getElementById('loading').remove(), 500);
+
+        // Bienvenida
+        setTimeout(() => {
+          speak('Bienvenido a Matemáticas en Realidad Aumentada. Hay cinco figuras geométricas en la escena: Cubo, Esfera, Cono, Cilindro y Pirámide. Haz clic en una figura o usa los botones para explorar.');
+        }, 800);
+
+        // Activar primer tab con tamaño normal
+        setTextSize('text-md');
+        document.getElementById('btn-sm').classList.add('active');
+        document.getElementById('btn-subtitles').classList.add('active');
+      }, 1500);
+    });
+
+    // Navegación por teclado (flecha derecha / izquierda en escena)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') nextFigure();
+      else if (e.key === 'ArrowLeft') prevFigure();
+      else if (e.key === ' ') { e.preventDefault(); readCurrentFigure(); }
+    });
+  </script>
 </body>
 </html>
