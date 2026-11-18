@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Matemáticas en RA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+/* colores del tema claro, el oscuro sigue la preferencia del sistema */
+:root{--bg:#fafafa;--fg:#111;--mut:#52525b;--line:#a1a1aa;--card:#fff;--acc:#1d4ed8;--accfg:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#0c0c10;--fg:#f4f4f5;--mut:#b4b4bd;--line:#52525b;--card:#17171c;--acc:#7db2ff;--accfg:#0c0c10}}
+body.hc{--bg:#000;--fg:#fff;--mut:#fff;--line:#fff;--card:#000;--acc:#ffe600;--accfg:#000}
+html{font-size:100%}html.t1{font-size:120%}html.t2{font-size:140%}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--fg);height:100dvh;overflow:hidden;line-height:1.5}
+#c{position:fixed;inset:0;width:100%;height:100%;touch-action:none}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+
+#ui{position:fixed;inset:0;display:flex;flex-direction:column;pointer-events:none}
+#ui>*{pointer-events:auto}
+.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.5rem 1rem;padding-top:max(.5rem,env(safe-area-inset-top));background:var(--bg);border-bottom:1px solid var(--line)}
+.brand{font-weight:600}
+.btn{min-height:2.75rem;padding:.5rem 1rem;border:1.5px solid var(--line);border-radius:.75rem;background:var(--card);color:var(--fg);font:inherit;cursor:pointer}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:var(--accfg);font-weight:600}
+.btn[aria-pressed=true]{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.panel{position:fixed;top:3.6rem;right:.75rem;z-index:10;width:min(21rem,calc(100% - 1.5rem));max-height:calc(100dvh - 5rem);overflow:auto;padding:1rem;display:grid;gap:.5rem;background:var(--card);border:1.5px solid var(--line);border-radius:1rem}
+.panel[hidden]{display:none}
+.panel .row{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.panel h2{font-size:.85rem;color:var(--mut);font-weight:600}
+
+#home{flex:1;overflow:auto;padding:0 1rem}
+#home .in{max-width:60rem;margin:0 auto;padding:1.5rem 0 1rem}
+h1{font-size:1.9rem;line-height:1.15;letter-spacing:-.02em}
+.lead{color:var(--mut);margin:.4rem 0 1.25rem}
+.note{border:1.5px solid var(--line);border-radius:.75rem;padding:.75rem 1rem;margin-bottom:1.25rem;font-size:.9rem}
+.note[hidden]{display:none}
+.figs{list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.75rem}
+.fig{display:flex;flex-direction:column;gap:.5rem}
+.pick{text-align:left;display:grid;gap:.25rem;padding:1rem;flex:1;border:1.5px solid var(--line);border-radius:1rem;background:var(--card);color:var(--fg);font:inherit;cursor:pointer}
+.pick[aria-pressed=true]{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.pick svg{width:2.75rem;height:2.75rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.pick b{font-size:1.1rem}
+.pick code{font:.85rem ui-monospace,Consolas,monospace;color:var(--mut)}
+.pick span{font-size:.9rem;color:var(--mut)}
+.start{position:sticky;bottom:0;display:flex;gap:.5rem;padding:.75rem 0 max(.75rem,env(safe-area-inset-bottom));background:var(--bg);max-width:60rem;margin:0 auto}
+.start .btn{flex:1}
+
+body.live #home{display:none}
+#stage{flex:1;position:relative;pointer-events:none;display:none}
+body.live #stage{display:block}
+.chip{position:absolute;top:.75rem;left:.75rem;right:.75rem;display:flex;flex-direction:column;align-items:center;gap:.4rem;pointer-events:none}
+.chip>*{background:var(--bg);border:1.5px solid var(--line);border-radius:.75rem;padding:.35rem .9rem;text-align:center;font-size:.9rem}
+.chip>[hidden]{display:none}
+.chip h2{font-size:1rem;pointer-events:auto}
+.dock{position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:.5rem;padding:.75rem;padding-bottom:max(.75rem,env(safe-area-inset-bottom));pointer-events:none}
+.dock>*{pointer-events:auto}
+.dock>[hidden]{display:none}
+.caption{align-self:center;max-width:36rem;background:#000;color:#fff;border-radius:.75rem;padding:.6rem 1rem;text-align:center;max-height:30dvh;overflow:auto}
+.info{background:var(--card);border:1.5px solid var(--line);border-radius:1rem;padding:1rem;max-height:40dvh;overflow:auto}
+.info h3{font-size:1.1rem}
+.info code{font:.95rem ui-monospace,Consolas,monospace;display:block;margin:.25rem 0}
+.info p{font-size:.92rem;color:var(--mut)}
+.bar{display:flex;gap:.5rem;flex-wrap:wrap}
+.bar .btn{flex:1;min-width:5.5rem}
+
+#toast{position:fixed;left:50%;bottom:6rem;transform:translateX(-50%);z-index:20;background:#000;color:#fff;padding:.5rem 1rem;border-radius:.75rem;font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%;text-align:center}
+#toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="c" aria-hidden="true"></canvas>
+
+<div id="ui">
+  <header class="top">
+    <span class="brand">Matemáticas en RA</span>
+    <button class="btn" id="a11y-btn" aria-expanded="false" aria-controls="panel">Accesibilidad</button>
+  </header>
+
+  <div id="panel" class="panel" hidden role="group" aria-label="Opciones de accesibilidad">
+    <button class="btn sw" data-k="hc" aria-pressed="false">Alto contraste</button>
+    <button class="btn sw" data-k="subs" aria-pressed="true">Subtítulos</button>
+    <button class="btn sw" data-k="narr" aria-pressed="true">Narración en voz alta</button>
+    <button class="btn" id="voice-btn" aria-pressed="false">Comandos de voz</button>
+    <h2 id="size-h">Tamaño del texto</h2>
+    <div class="row" role="group" aria-labelledby="size-h">
+      <button class="btn sz" data-s="0" aria-pressed="true">Normal</button>
+      <button class="btn sz" data-s="1" aria-pressed="false">Grande</button>
+      <button class="btn sz" data-s="2" aria-pressed="false">Muy grande</button>
+    </div>
+    <button class="btn" id="stop-btn">Detener narración</button>
+  </div>
+
+  <main id="home">
+    <div class="in">
+      <h1>Matemáticas en realidad aumentada</h1>
+      <p class="lead">Elige un cuerpo geométrico, escucha su descripción y colócalo sobre una superficie real.</p>
+      <p class="note" id="xr-note" hidden></p>
+      <ul class="figs" id="figs" aria-label="Cuerpos geométricos"></ul>
+    </div>
+    <div class="start">
+      <button class="btn pri" id="start-ar" disabled>Iniciar realidad aumentada</button>
+      <button class="btn" id="start-3d">Ver en 3D</button>
+    </div>
+  </main>
+
+  <section id="stage" aria-label="Visor">
+    <div class="chip">
+      <h2 id="stage-title" tabindex="-1"></h2>
+      <p id="hint"></p>
+      <p id="voice-ind" hidden></p>
+    </div>
+    <div class="dock">
+      <div id="caption" class="caption" hidden></div>
+      <div id="info" class="info" hidden>
+        <h3 id="i-name"></h3><code id="i-formula"></code>
+        <p id="i-data"></p><p id="i-desc"></p>
+      </div>
+      <div class="bar">
+        <button class="btn" id="b-prev">Anterior</button>
+        <button class="btn pri" id="b-read">Escuchar</button>
+        <button class="btn" id="b-next">Siguiente</button>
+        <button class="btn" id="b-info" aria-expanded="false">Información</button>
+        <button class="btn" id="b-exit">Salir</button>
+      </div>
+    </div>
+  </section>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* datos de las figuras, los textos de narracion se leen tal cual */
+const solid = (geo, color) => {
+  const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: .55, metalness: .05 }));
+  m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 20),
+    new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: .55 })));
+  geo.computeBoundingBox();
+  m.userData.half = geo.boundingBox.max.y;
+  return m;
+};
+const FIGS = [
+  { id: 'cubo', nombre: 'Cubo', formula: 'V = a³   A = 6a²',
+    datos: '6 caras, 8 vértices y 12 aristas.',
+    desc: 'Poliedro regular con seis caras cuadradas iguales.',
+    narr: 'El cubo es un poliedro regular con seis caras cuadradas. Tiene ocho vértices y doce aristas. Su volumen es el lado elevado al cubo.',
+    svg: '<path d="M24 5l16 9v20L24 43 8 34V14z"/><path d="M8 14l16 9 16-9M24 23v20"/>',
+    make: s => solid(new THREE.BoxGeometry(s, s, s), 0x2563eb) },
+  { id: 'esfera', nombre: 'Esfera', formula: 'V = 4/3 πr³   A = 4πr²',
+    datos: 'Sin caras, aristas ni vértices.',
+    desc: 'Todos sus puntos están a la misma distancia del centro.',
+    narr: 'La esfera es perfectamente redonda. Todos sus puntos están a la misma distancia del centro. Su volumen es cuatro tercios de pi por el radio al cubo.',
+    svg: '<circle cx="24" cy="24" r="18"/><ellipse cx="24" cy="24" rx="18" ry="6"/>',
+    make: s => solid(new THREE.SphereGeometry(s * .6, 48, 32), 0xe11d48) },
+  { id: 'cono', nombre: 'Cono', formula: 'V = 1/3 πr²h   A = πr(r + g)',
+    datos: 'Una base circular y un vértice. La letra g es la generatriz.',
+    desc: 'Base circular y superficie lateral que termina en un vértice.',
+    narr: 'El cono tiene una base circular y termina en un punto llamado vértice. Su volumen es un tercio de pi por el radio al cuadrado por la altura.',
+    svg: '<path d="M24 5L8 36M24 5l16 31"/><ellipse cx="24" cy="36" rx="16" ry="6"/>',
+    make: s => solid(new THREE.ConeGeometry(s * .5, s * 1.2, 48), 0xd97706) },
+  { id: 'cilindro', nombre: 'Cilindro', formula: 'V = πr²h   A = 2πr(r + h)',
+    datos: 'Dos bases circulares paralelas.',
+    desc: 'Dos bases circulares unidas por una superficie lateral curva.',
+    narr: 'El cilindro tiene dos bases circulares paralelas y una superficie lateral curva. Su volumen es pi por el radio al cuadrado por la altura.',
+    svg: '<ellipse cx="24" cy="12" rx="14" ry="5"/><path d="M10 12v24M38 12v24M10 36a14 5 0 0 0 28 0"/>',
+    make: s => solid(new THREE.CylinderGeometry(s * .45, s * .45, s * 1.2, 48), 0x059669) },
+  { id: 'piramide', nombre: 'Pirámide', formula: 'V = 1/3 · Ab · h',
+    datos: '5 caras, 5 vértices y 8 aristas. Ab es el área de la base.',
+    desc: 'Base cuadrada y cuatro caras triangulares que se unen en el ápice.',
+    narr: 'La pirámide tiene una base cuadrada y cuatro caras triangulares que se unen en un punto llamado ápice. Su volumen es un tercio del área de la base por la altura.',
+    svg: '<path d="M24 5L6 34l18 9 18-9zM24 5v38"/><path d="M6 34l18-7 18 7M24 5v22" stroke-dasharray="3 3"/>',
+    make: s => solid(new THREE.ConeGeometry(s * .65, s * 1.2, 4).rotateY(Math.PI / 4), 0x7c3aed) }
+];
+
+/* estado y utilidades */
+const $ = s => document.querySelector(s);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const norm = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const cfg = Object.assign({ hc: false, subs: true, narr: true, size: 0 }, (() => {
+  try { return JSON.parse(localStorage.getItem('ra-cfg')) || {}; } catch (e) { return {}; }
+})());
+let cur = 0, mode = 'home', infoOpen = false, placed = false;
+let renderer, scene, camera, reticle, mesh = null;
+let yaw = 0, pitch = 0, drag = null, xr = {}, xrOK = false;
+let toastT, capT, speakId = 0, rec = null, voiceOn = false;
+const pos = new THREE.Vector3();
+
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2400);
+}
+
+/* configuracion de accesibilidad, se guarda en el navegador */
+function applyCfg() {
+  document.body.classList.toggle('hc', cfg.hc);
+  document.documentElement.className = 't' + cfg.size;
+  document.querySelectorAll('.sw').forEach(b => b.setAttribute('aria-pressed', cfg[b.dataset.k]));
+  document.querySelectorAll('.sz').forEach(b => b.setAttribute('aria-pressed', +b.dataset.s === cfg.size));
+  if (renderer && !xr.session) renderer.setClearColor(new THREE.Color(getComputedStyle(document.body).getPropertyValue('--bg').trim()), 1);
+  try { localStorage.setItem('ra-cfg', JSON.stringify(cfg)); } catch (e) {}
+}
+function flip(k) {
+  cfg[k] = !cfg[k]; applyCfg();
+  if (k === 'subs' && !cfg.subs) $('#caption').hidden = true;
+  toast(({ hc: 'Alto contraste', subs: 'Subtítulos', narr: 'Narración' })[k] + (cfg[k] ? ' activado' : ' desactivado'));
+}
+function setSize(n) { cfg.size = n; applyCfg(); toast('Tamaño de texto ' + ['normal', 'grande', 'muy grande'][n]); }
+
+/* narracion y subtitulos */
+function stopSpeech() {
+  speakId++; clearTimeout(capT);
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  $('#caption').hidden = true;
+}
+function hideCaption(ms) { clearTimeout(capT); capT = setTimeout(() => $('#caption').hidden = true, ms); }
+function speak(text) {
+  stopSpeech();
+  const id = speakId;
+  if (cfg.subs) { $('#caption').textContent = text; $('#caption').hidden = false; }
+  if (cfg.narr && 'speechSynthesis' in window) {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'es-MX'; u.rate = .95;
+    const v = speechSynthesis.getVoices().find(v => v.lang.toLowerCase().startsWith('es'));
+    if (v) u.voice = v;
+    // el id evita que el fin de una lectura cancelada oculte la siguiente
+    u.onend = u.onerror = () => { if (id === speakId) hideCaption(1200); };
+    speechSynthesis.speak(u);
+  } else hideCaption(Math.max(2500, text.length * 65));
+}
+const readCur = () => speak(FIGS[cur].nombre + '. ' + FIGS[cur].narr);
+
+/* seleccion de figuras */
+function select(i) {
+  cur = (i + FIGS.length) % FIGS.length;
+  const f = FIGS[cur];
+  document.querySelectorAll('.pick').forEach((b, j) => b.setAttribute('aria-pressed', j === cur));
+  $('#stage-title').textContent = f.nombre;
+  $('#i-name').textContent = f.nombre; $('#i-formula').textContent = f.formula;
+  $('#i-data').textContent = f.datos; $('#i-desc').textContent = f.desc;
+  build();
+}
+const next = () => { select(cur + 1); readCur(); };
+const prev = () => { select(cur - 1); readCur(); };
+function toggleInfo(force) {
+  infoOpen = force === undefined ? !infoOpen : force;
+  $('#info').hidden = !infoOpen;
+  $('#b-info').setAttribute('aria-expanded', infoOpen);
+  if (infoOpen) speak(FIGS[cur].nombre + '. ' + FIGS[cur].desc + ' ' + FIGS[cur].datos + ' Fórmula: ' + FIGS[cur].formula);
+}
+
+/* escena three.js */
+function initThree() {
+  renderer = new THREE.WebGLRenderer({ canvas: $('#c'), antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.xr.enabled = true;
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, .01, 20);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x888888, 1.1));
+  const d = new THREE.DirectionalLight(0xffffff, .8); d.position.set(1, 2, 1.5); scene.add(d);
+  reticle = new THREE.Mesh(new THREE.RingGeometry(.07, .09, 32).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  reticle.matrixAutoUpdate = false; reticle.visible = false; scene.add(reticle);
+
+  addEventListener('resize', () => {
+    if (renderer.xr.isPresenting) return;
+    camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+  });
+  // en modo 3D se gira la figura arrastrando y se acerca con la rueda
+  const cv = $('#c');
+  cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', e => {
+    if (!drag || mode !== '3d') return;
+    yaw += (e.clientX - drag.x) * .01;
+    pitch = Math.max(-1, Math.min(1, pitch + (e.clientY - drag.y) * .01));
+    drag = { x: e.clientX, y: e.clientY };
+  });
+  ['pointerup', 'pointercancel'].forEach(t => cv.addEventListener(t, () => drag = null));
+  cv.addEventListener('wheel', e => {
+    if (mode === '3d') camera.position.z = Math.max(.3, Math.min(1.4, camera.position.z + e.deltaY * .0008));
+  }, { passive: true });
+}
+
+function clearMesh() {
+  if (!mesh) return;
+  scene.remove(mesh);
+  mesh.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+  mesh = null;
+}
+function build() {
+  clearMesh();
+  if (mode === 'home' || (mode === 'ar' && !placed)) return;
+  mesh = FIGS[cur].make(.16);
+  mesh.position.copy(pos);
+  if (mode === 'ar') mesh.position.y += mesh.userData.half;
+  scene.add(mesh);
+}
+
+function loop(t, frame) {
+  if (frame && xr.hit) {
+    const r = frame.getHitTestResults(xr.hit);
+    const pose = r.length ? r[0].getPose(renderer.xr.getReferenceSpace()) : null;
+    reticle.visible = !!pose;
+    if (pose) reticle.matrix.fromArray(pose.transform.matrix);
+    $('#hint').hidden = placed || reticle.visible;
+  }
+  if (mesh) {
+    if (!reduce && !drag) yaw += .008;
+    mesh.rotation.set(mode === '3d' ? pitch : 0, yaw, 0);
+  }
+  renderer.render(scene, camera);
+}
+
+/* entrada y salida de los modos */
+function enter(m) {
+  mode = m; yaw = 0; pitch = 0; placed = m === '3d';
+  pos.set(0, 0, 0);
+  document.body.classList.add('live');
+  $('#hint').hidden = false;
+  $('#hint').textContent = m === 'ar'
+    ? 'Apunta a una superficie plana y toca para colocar la figura.'
+    : 'Arrastra para girar. Usa la rueda para acercar.';
+  if (m === '3d') {
+    camera.position.set(0, .05, .7); camera.lookAt(0, 0, 0);
+    applyCfg();
+  } else renderer.setClearColor(0x000000, 0);
+  renderer.setAnimationLoop(loop);
+  select(cur);
+  $('#stage-title').focus();
+}
+function leave() {
+  mode = 'home'; clearMesh(); reticle.visible = false;
+  renderer.setAnimationLoop(null);
+  document.body.classList.remove('live');
+  toggleInfo(false); stopSpeech();
+  $('#start-3d').focus();
+}
+async function startAR() {
+  try {
+    const s = await navigator.xr.requestSession('immersive-ar', {
+      requiredFeatures: ['hit-test'], optionalFeatures: ['dom-overlay'], domOverlay: { root: $('#ui') }
+    });
+    renderer.xr.setReferenceSpaceType('local');
+    await renderer.xr.setSession(s);
+    xr.session = s;
+    xr.hit = await s.requestHitTestSource({ space: await s.requestReferenceSpace('viewer') });
+    s.addEventListener('end', () => { xr = {}; applyCfg(); leave(); });
+    s.addEventListener('select', onSelect);
+    enter('ar');
+    speak('Realidad aumentada iniciada. Apunta a una superficie plana y toca para colocar la figura.');
+  } catch (e) {
+    console.warn('No se pudo iniciar la sesión de RA', e);
+    toast('No se pudo iniciar la RA, se abre el modo 3D');
+    enter('3d');
+  }
+}
+function onSelect() {
+  if (!reticle.visible) return;
+  const first = !placed;
+  placed = true;
+  pos.setFromMatrixPosition(reticle.matrix);
+  $('#hint').hidden = true;
+  build();
+  if (first) speak(FIGS[cur].nombre + ' colocado. Toca otra superficie para moverlo.');
+}
+function exit() { if (xr.session) xr.session.end(); else leave(); }
+
+/* comandos de voz, se comparan sin acentos y por palabra completa */
+const CMDS = [
+  [/\b(siguiente|adelante)\b/, next], [/\b(anterior|atras)\b/, prev],
+  [/\b(leer|describir|escuchar)\b/, readCur], [/\b(detener|silencio|callar)\b/, stopSpeech],
+  [/\binformacion\b/, () => toggleInfo()], [/\bcontraste\b/, () => flip('hc')],
+  [/\bsubtitulos?\b/, () => flip('subs')], [/\btexto grande\b/, () => setSize(1)],
+  [/\btexto normal\b/, () => setSize(0)], [/\b(salir|cerrar)\b/, () => mode !== 'home' && exit()]
+];
+function command(text) {
+  const t = norm(text);
+  const c = CMDS.find(c => c[0].test(t));
+  if (c) return c[1]();
+  const i = FIGS.findIndex(f => t.includes(f.id));
+  if (i !== -1) { select(i); readCur(); }
+}
+function setVoice(on) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (on && !SR) { toast('Este navegador no admite comandos de voz'); return; }
+  voiceOn = on;
+  $('#voice-btn').setAttribute('aria-pressed', on);
+  $('#voice-ind').hidden = !on;
+  if (!on) { if (rec) { rec.onend = null; rec.stop(); } rec = null; return; }
+  rec = new SR(); rec.lang = 'es-MX'; rec.continuous = true;
+  $('#voice-ind').textContent = 'Escuchando';
+  rec.onresult = e => {
+    const t = e.results[e.results.length - 1][0].transcript.trim();
+    $('#voice-ind').textContent = 'Escuché: ' + t;
+    command(t);
+  };
+  rec.onerror = e => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      toast('Permiso de micrófono denegado'); setVoice(false);
+    }
+  };
+  rec.onend = () => { if (voiceOn) { try { rec.start(); } catch (e) {} } };
+  rec.start();
+  toast('Comandos de voz activados');
+}
+
+/* interfaz */
+function buildList() {
+  $('#figs').innerHTML = FIGS.map((f, i) => `
+    <li class="fig">
+      <button class="pick" aria-pressed="${i === 0}" data-i="${i}">
+        <svg viewBox="0 0 48 48" aria-hidden="true">${f.svg}</svg>
+        <b>${f.nombre}</b><code>${f.formula}</code><span>${f.desc}</span>
+      </button>
+      <button class="btn listen" data-i="${i}" aria-label="Escuchar la descripción de ${f.nombre}">Escuchar</button>
+    </li>`).join('');
+  $('#figs').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    select(+b.dataset.i);
+    if (b.classList.contains('listen')) readCur();
+  });
+}
+function bind() {
+  $('#a11y-btn').onclick = () => {
+    const open = $('#panel').hidden;
+    $('#panel').hidden = !open; $('#a11y-btn').setAttribute('aria-expanded', open);
+  };
+  document.querySelectorAll('.sw').forEach(b => b.onclick = () => flip(b.dataset.k));
+  document.querySelectorAll('.sz').forEach(b => b.onclick = () => setSize(+b.dataset.s));
+  $('#voice-btn').onclick = () => setVoice(!voiceOn);
+  $('#stop-btn').onclick = stopSpeech;
+  $('#start-ar').onclick = startAR;
+  $('#start-3d').onclick = () => enter('3d');
+  $('#b-prev').onclick = prev; $('#b-next').onclick = next;
+  $('#b-read').onclick = readCur; $('#b-info').onclick = () => toggleInfo();
+  $('#b-exit').onclick = exit;
+  // los toques sobre la interfaz no deben colocar la figura en RA
+  $('#ui').addEventListener('beforexrselect', e => {
+    if (e.target.closest('button, .panel, .info, .caption')) e.preventDefault();
+  });
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (!$('#panel').hidden) { $('#a11y-btn').click(); $('#a11y-btn').focus(); }
+      else if (mode !== 'home') exit();
+    } else if (mode !== 'home' && e.key === 'ArrowRight') next();
+    else if (mode !== 'home' && e.key === 'ArrowLeft') prev();
+  });
+}
+
+async function init() {
+  buildList(); bind();
+  if (typeof THREE === 'undefined') {
+    const n = $('#xr-note');
+    n.hidden = false; n.textContent = 'No se pudo cargar la librería 3D. Revisa tu conexión y recarga la página.';
+    $('#start-3d').disabled = true; return;
+  }
+  initThree(); applyCfg(); select(0);
+  // la RA solo existe en contexto seguro (https) y en navegadores compatibles
+  if (navigator.xr) xrOK = await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
+  $('#start-ar').disabled = !xrOK;
+  if (!xrOK) {
+    const n = $('#xr-note');
+    n.hidden = false;
+    n.textContent = 'La realidad aumentada no está disponible en este navegador. Usa Chrome en Android con HTTPS. Mientras tanto puedes ver las figuras en 3D.';
+  }
+}
+init();
+</script>
+</body>
+</html>
